@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urdu Poster Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --bg-lime-green: #a6ff00;
+            --bg-yellow: #ffff00;
+            --bg-light-green: #d4ff99;
+            --bg-beige: #f5f5dc;
+            --bg-maroon: #800000;
+            --bg-dark-brown: #2c1e10;
+            --bg-blue: #0000cd;
+            --text-black: #000000;
+            --text-red: #ff0000;
+            --text-white: #ffffff;
+        }
+
+        body {
+            font-family: 'Noto Nastaliq Urdu', serif;
+            direction: rtl;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #poster-container {
+            width: 100%;
+            max-width: 600px; /* Adjust as needed */
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: var(--bg-lime-green); /* Fallback, will be overridden by sections */
+        }
+
+        #poster-content {
+            width: 100%;
+            overflow: hidden; /* Ensure contained elements don't break layout */
+            position: relative; /* For absolute positioning if needed */
+        }
+
+        .poster-section {
+            padding: 10px 20px;
+            text-align: center;
+            color: var(--text-black);
+        }
+
+        /* Header Section (Yellow) */
+        .header-section {
+            background-color: var(--bg-yellow);
+            border-bottom: 3px solid var(--text-black); /* Approximate */
+            padding: 5px;
+            position: relative;
+        }
+        .admission-badge {
+            position: absolute;
+            top: 5px;
+            left: 10px; /* Adjust for RTL */
+            background-color: var(--bg-lime-green);
+            color: var(--text-black);
+            padding: 2px 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border: 1px solid var(--text-black);
+            transform: rotate(-5deg); /* Slight tilt */
+        }
+        .main-title {
+            font-size: 2.8em;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 5px;
+        }
+
+        /* Subtitle Section (Lime Green) */
+        .subtitle-section {
+            background-color: var(--bg-lime-green);
+            padding: 15px 20px;
+        }
+        .subtitle-text {
+             font-size: 1.1em;
+             margin-bottom: 5px;
+             padding: 3px;
+        }
+        .address-text {
+            font-size: 1em;
+            padding: 3px;
+        }
+
+        /* Middle Section (Light Green/Shape) */
+        .middle-section {
+            background-color: var(--bg-light-green);
+            padding: 40px 20px; /* More padding */
+            min-height: 150px; /* Placeholder height */
+            position: relative;
+            margin: 0 15px; /* Indent */
+            border: 2px solid var(--bg-beige);
+            border-bottom: none;
+            margin-bottom: -10px; /* Overlap slightly */
+        }
+        .middle-title {
+            background-color: var(--bg-beige);
+            position: absolute;
+            bottom: -20px; /* Position at bottom */
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 5px 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: 2px solid var(--text-black);
+            border-radius: 15px; /* Curved */
+            white-space: nowrap;
+        }
+
+        /* Lower Middle Section (Beige) */
+        .lower-middle-section {
+            background-color: var(--bg-beige);
+            min-height: 80px;
+            padding: 30px 20px 10px; /* Add padding top for the overlapped title */
+        }
+
+        /* Teachers Section (Maroon) */
+        .teachers-section {
+            background-color: var(--bg-maroon);
+            color: var(--text-white);
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .teachers-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--text-red); /* Red text on maroon */
+            margin-bottom: 15px;
+            padding: 3px;
+        }
+        .teachers-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .teachers-list li {
+            background-color: var(--bg-dark-brown);
+            color: var(--text-white);
+            padding: 5px 15px;
+            border-radius: 20px; /* Pill shape */
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-width: 120px; /* Ensure some width */
+            justify-content: center; /* Center text */
+        }
+        .teacher-name {
+            flex-grow: 1;
+            text-align: center;
+            padding: 2px;
+        }
+        .teacher-actions button {
+            background: none;
+            border: none;
+            color: #ffc107; /* Yellow icons */
+            cursor: pointer;
+            font-size: 0.8em;
+            padding: 0 2px;
+        }
+
+
+        /* Contact Section (Blue) */
+        .contact-section {
+            background-color: var(--bg-blue);
+            color: var(--text-white);
+            padding: 10px;
+        }
+        .contact-list {
+             list-style: none;
+             padding: 0;
+             margin: 5px 0;
+        }
+         .contact-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Align number and controls */
+            margin-bottom: 5px;
+            padding: 2px 5px;
+        }
+        .contact-number {
+            flex-grow: 1;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            letter-spacing: 1px;
+            padding: 2px;
+        }
+         .contact-actions button {
+            background: none;
+            border: none;
+            color: #ffc107; /* Yellow icons */
+            cursor: pointer;
+            font-size: 0.8em;
+            padding: 0 2px;
+        }
+
+
+        /* Announcement Section (Blue) */
+        .announcement-section {
+             background-color: var(--bg-blue);
+             color: var(--text-white);
+             padding: 10px 20px;
+             font-size: 1em;
+             text-align: center;
+             line-height: 1.6;
+        }
+        .announcement-text {
+            padding: 3px;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .controls button, .list-controls button {
+            padding: 8px 15px;
+            margin: 5px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .list-controls {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .edit-input { /* Style for inline editing */
+            border: 1px dashed #ccc;
+            padding: 2px 5px;
+            min-width: 100px;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: var(--text-black);
+            font-family: 'Noto Nastaliq Urdu', serif;
+            font-size: inherit;
+            direction: rtl;
+            display: inline-block; /* Keep it inline */
+        }
+
+        /* Hide controls for printing/export */
+        .no-export {
+            /* Elements with this class will be hidden */
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background-color: #fff;
+            }
+            #poster-container {
+                border: none;
+                box-shadow: none;
+                max-width: 100%;
+                margin: 0;
+            }
+            .controls, .list-controls, .teacher-actions, .contact-actions, .no-export {
+                display: none !important; /* Important to override inline styles if any */
+            }
+            [contenteditable="true"] {
+                border: none;
+                padding: 0; /* Reset padding potentially added for editing */
+            }
+            /* Ensure high fidelity print */
+             #poster-content {
+                transform: scale(1); /* Reset any scaling */
+                width: 100%;
+                height: auto;
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .main-title { font-size: 2em; }
+            .teachers-title { font-size: 1.5em; }
+            .teachers-list li { font-size: 0.8em; padding: 4px 10px; min-width: 100px; }
+            .contact-number { font-size: 1em; }
+            .announcement-section { font-size: 0.9em; }
+            .middle-title { font-size: 1.1em; padding: 4px 20px;}
+        }
+         @media (max-width: 400px) {
+             .main-title { font-size: 1.6em; }
+             .teachers-list { justify-content: center; } /* Stack if needed */
+             .teachers-list li { width: 80%; justify-content: center; }
+             .admission-badge { font-size: 0.8em; padding: 1px 5px; }
+             .subtitle-text { font-size: 1em; }
+             .address-text { font-size: 0.9em; }
+         }
+
+    </style>
+</head>
+<body>
+
+    <div id="poster-container">
+        <div id="poster-content">
+            <!-- Header -->
+            <div class="poster-section header-section">
+                <span class="admission-badge" contenteditable="true" data-key="admissionBadge">اعلان داخلہ</span>
+                <h1 class="main-title" contenteditable="true" data-key="mainTitle">دار العلوم زکریا</h1>
+            </div>
+
+            <!-- Subtitle -->
+            <div class="poster-section subtitle-section">
+                <p class="subtitle-text" contenteditable="true" data-key="subTitle1">علمی و عملی سرگرمیاں</p>
+                <p class="address-text" contenteditable="true" data-key="address">لنک روڈ نزد دامی پل ڈو میل</p>
+            </div>
+
+            <!-- Middle Section with Title Overlap -->
+            <div class="poster-section middle-section">
+                 <!-- Content for this area if any -->
+                 <span class="middle-title" contenteditable="true" data-key="middleTitle">دارالافتاء والقضاء</span>
+            </div>
+
+            <!-- Lower Middle -->
+            <div class="poster-section lower-middle-section">
+                <!-- Content for this area if any -->
+            </div>
+
+            <!-- Teachers -->
+            <div class="poster-section teachers-section">
+                <h2 class="teachers-title" contenteditable="true" data-key="teachersTitle">مدرسین حضرات</h2>
+                <ul class="teachers-list" id="teachers-list">
+                    <!-- Teacher items will be loaded here by JS -->
+                </ul>
+                 <div class="list-controls no-export">
+                     <button onclick="addListItem('teachers')">استاد شامل کریں</button>
+                 </div>
+            </div>
+
+            <!-- Contacts -->
+            <div class="poster-section contact-section">
+                <ul class="contact-list" id="contacts-list">
+                    <!-- Contact items will be loaded here by JS -->
+                </ul>
+                 <div class="list-controls no-export">
+                     <button onclick="addListItem('contacts')">نمبر شامل کریں</button>
+                 </div>
+            </div>
+
+            <!-- Announcement -->
+            <div class="poster-section announcement-section">
+                <p class="announcement-text" contenteditable="true" data-key="announcement">تاریخ داخلہ ۱۰ شوال سے لیکر ۱۷ شوال تک۔ ۱۸ شوال سے باقاعدہ اسباق کی افتتاح ہو گی ان شاء اللہ۔</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls no-export">
+        <button id="export-button">Export to Image (PNG)</button>
+        <button id="reset-button">Reset to Default</button>
+    </div>
+
+    <script>
+        const defaultData = {
+            admissionBadge: "اعلان داخلہ",
+            mainTitle: "دار العلوم زکریا",
+            subTitle1: "علمی و عملی سرگرمیاں",
+            address: "لنک روڈ نزد دامی پل ڈو میل",
+            middleTitle: "دارالافتاء والقضاء",
+            teachersTitle: "مدرسین حضرات",
+            announcement: "تاریخ داخلہ ۱۰ شوال سے لیکر ۱۷ شوال تک۔ ۱۸ شوال سے باقاعدہ اسباق کی افتتاح ہو گی ان شاء اللہ۔",
+            teachers: [
+                { id: Date.now() + 1, name: "مفتی تحسین الله صاحب" },
+                { id: Date.now() + 2, name: "مفتی محمد جاوید صاحب" },
+                { id: Date.now() + 3, name: "مفتی عبد الجلیل صاحب" },
+                { id: Date.now() + 4, name: "قاری وحید الله صاحب" },
+                { id: Date.now() + 5, name: "قاری محمد شیر صاحب" },
+                { id: Date.now() + 6, name: "مولانا شفیع الرحمن صاحب" }
+            ],
+            contacts: [
+                { id: Date.now() + 7, number: "03364041841" },
+                { id: Date.now() + 8, number: "03319327288" }
+            ]
+        };
+
+        let currentData = {};
+
+        function saveData() {
+            // Save simple contenteditable fields
+            document.querySelectorAll('[contenteditable="true"][data-key]').forEach(el => {
+                currentData[el.dataset.key] = el.innerText.trim();
+            });
+            // Lists are saved via their specific functions (add/edit/delete)
+            localStorage.setItem('posterData', JSON.stringify(currentData));
+            console.log("Data Saved:", currentData);
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('posterData');
+            currentData = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(defaultData)); // Deep copy default
+
+            // Load simple contenteditable fields
+            document.querySelectorAll('[contenteditable="true"][data-key]').forEach(el => {
+                if (currentData[el.dataset.key]) {
+                    el.innerText = currentData[el.dataset.key];
+                } else if (defaultData[el.dataset.key]) {
+                     el.innerText = defaultData[el.dataset.key]; // Fallback to default if key missing
+                     currentData[el.dataset.key] = defaultData[el.dataset.key]; // Add missing key to current data
+                }
+            });
+
+            renderList('teachers');
+            renderList('contacts');
+
+             // Add event listeners for saving simple fields
+            document.querySelectorAll('[contenteditable="true"][data-key]').forEach(el => {
+                el.addEventListener('blur', saveData); // Save on losing focus
+            });
+        }
+
+        function makeEditable(element, listType, itemId, field) {
+            const originalText = element.innerText;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = originalText;
+            input.className = 'edit-input'; // Apply basic styling
+            input.style.width = `${element.offsetWidth + 10}px`; // Adjust width
+
+            element.replaceWith(input);
+            input.focus();
+
+            input.addEventListener('blur', () => finishEditing(input, listType, itemId, field, originalText));
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    input.blur();
+                } else if (e.key === 'Escape') {
+                    finishEditing(input, listType, itemId, field, originalText, true); // Pass true to cancel
+                }
+            });
+        }
+
+        function finishEditing(input, listType, itemId, field, originalText, cancel = false) {
+            const newValue = input.value.trim();
+            const span = document.createElement('span');
+            span.className = (listType === 'teachers') ? 'teacher-name' : 'contact-number'; // Adjust class based on type
+            span.innerText = (cancel || newValue === '') ? originalText : newValue;
+
+             // Add back the click listener for editing
+            span.onclick = () => makeEditable(span, listType, itemId, field);
+
+            input.replaceWith(span);
+
+            if (!cancel && newValue !== '' && newValue !== originalText) {
+                const itemIndex = currentData[listType].findIndex(item => item.id === itemId);
+                if (itemIndex > -1) {
+                    currentData[listType][itemIndex][field] = newValue;
+                    saveData(); // Save the entire data object including updated list
+                }
+            }
+        }
+
+
+        function renderList(listType) {
+            const listElement = document.getElementById(`${listType}-list`);
+            listElement.innerHTML = ''; // Clear current list
+
+            if (!currentData[listType]) currentData[listType] = []; // Initialize if list doesn't exist
+
+            currentData[listType].forEach(item => {
+                const li = document.createElement('li');
+                li.dataset.id = item.id;
+
+                if (listType === 'teachers') {
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'teacher-name';
+                    nameSpan.innerText = item.name;
+                    nameSpan.onclick = () => makeEditable(nameSpan, listType, item.id, 'name');
+                    li.appendChild(nameSpan);
+                } else if (listType === 'contacts') {
+                    const numberSpan = document.createElement('span');
+                    numberSpan.className = 'contact-number';
+                    numberSpan.innerText = item.number;
+                     numberSpan.onclick = () => makeEditable(numberSpan, listType, item.id, 'number');
+                    li.appendChild(numberSpan);
+                }
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = (listType === 'teachers' ? 'teacher-actions' : 'contact-actions') + ' no-export';
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = '&#10006;'; // Cross mark
+                deleteBtn.title = 'حذف کریں';
+                deleteBtn.onclick = () => deleteListItem(listType, item.id);
+                actionsDiv.appendChild(deleteBtn);
+
+                li.appendChild(actionsDiv);
+                listElement.appendChild(li);
+            });
+        }
+
+        function addListItem(listType) {
+            const newItem = { id: Date.now() };
+            let placeholderText = '';
+            let field = '';
+
+            if (listType === 'teachers') {
+                placeholderText = 'نیا استاد';
+                field = 'name';
+            } else if (listType === 'contacts') {
+                 placeholderText = 'نیا نمبر';
+                 field = 'number';
+            }
+
+            newItem[field] = placeholderText;
+
+            if (!currentData[listType]) currentData[listType] = []; // Ensure list exists
+            currentData[listType].push(newItem);
+            renderList(listType); // Re-render the list
+            saveData();
+
+            // Optional: Immediately trigger edit on the new item
+            const listElement = document.getElementById(`${listType}-list`);
+            const newItemElement = listElement.querySelector(`li[data-id="${newItem.id}"]`);
+            if (newItemElement) {
+                 const textSpan = newItemElement.querySelector(`.${listType === 'teachers' ? 'teacher-name' : 'contact-number'}`);
+                 if(textSpan) makeEditable(textSpan, listType, newItem.id, field);
+            }
+        }
+
+        function deleteListItem(listType, itemId) {
+            currentData[listType] = currentData[listType].filter(item => item.id !== itemId);
+            renderList(listType);
+            saveData();
+        }
+
+        document.getElementById('export-button').addEventListener('click', () => {
+            const posterElement = document.getElementById('poster-content');
+            const elementsToHide = posterElement.querySelectorAll('.no-export');
+            const originallyEditable = posterElement.querySelectorAll('[contenteditable="true"]');
+
+            // Hide controls and remove editable borders for export
+            elementsToHide.forEach(el => el.style.display = 'none');
+            originallyEditable.forEach(el => el.setAttribute('contenteditable', 'false')); // Temporarily disable editing
+
+            html2canvas(posterElement, {
+                 scale: 2, // Render at 2x resolution
+                 useCORS: true, // If using external images/fonts later
+                 logging: false,
+                 onclone: (clonedDoc) => {
+                    // Ensure fonts are loaded in the cloned document if needed, usually handled well
+                     const clonedPosterElement = clonedDoc.getElementById('poster-content');
+                     // Remove hidden elements from clone - safer than display:none sometimes
+                     clonedPosterElement.querySelectorAll('.no-export').forEach(el => el.remove());
+                     clonedPosterElement.querySelectorAll('[contenteditable="false"]').forEach(el => {
+                         // Remove any visual cues of editability if necessary in clone
+                     });
+                 }
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'urdu-poster.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                // Restore controls and editability
+                elementsToHide.forEach(el => el.style.display = ''); // Restore display
+                originallyEditable.forEach(el => el.setAttribute('contenteditable', 'true'));
+
+            }).catch(err => {
+                 console.error("Error exporting image:", err);
+                 // Restore controls and editability even on error
+                 elementsToHide.forEach(el => el.style.display = '');
+                 originallyEditable.forEach(el => el.setAttribute('contenteditable', 'true'));
+            });
+        });
+
+        document.getElementById('reset-button').addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all content to the default? All changes will be lost.')) {
+                localStorage.removeItem('posterData');
+                currentData = JSON.parse(JSON.stringify(defaultData)); // Reset in-memory data
+                loadData(); // Reload UI from default data
+                // Optionally: window.location.reload(); // Simpler, but full page reload
+            }
+        });
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', loadData);
+
+    </script>
+
+</body>
+</html>

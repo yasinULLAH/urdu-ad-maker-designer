@@ -1,0 +1,1919 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Islamic Poster Designer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri&family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #27ae60;
+            --background-color: #f5f5f5;
+            --text-color: #333;
+            --border-color: #ddd;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            direction: ltr;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .app-title {
+            font-size: 1.5rem;
+        }
+        
+        .language-toggle {
+            cursor: pointer;
+            background-color: var(--secondary-color);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+        
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            overflow: auto;
+            padding: 2rem;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .canvas {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .panel {
+            background-color: white;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+        
+        .panel-content {
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-top: none;
+        }
+        
+        .template-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .template-item:hover {
+            background-color: var(--background-color);
+        }
+        
+        .tool-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .tool-button:hover {
+            background-color: #34495e;
+        }
+        
+        #exportButtons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .color-picker {
+            display: flex;
+            align-items: center;
+        }
+        
+        .color-preview {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--border-color);
+            margin-right: 0.5rem;
+        }
+        
+        .element {
+            position: absolute;
+            cursor: move;
+        }
+        
+        .text-element {
+            min-width: 50px;
+            min-height: 20px;
+            padding: 5px;
+        }
+        
+        .image-element {
+            min-width: 100px;
+            min-height: 100px;
+        }
+        
+        .shape-element {
+            min-width: 50px;
+            min-height: 50px;
+        }
+        
+        .selected {
+            outline: 2px solid #3498db;
+        }
+        
+        .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #3498db;
+        }
+        
+        .rotate-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #e74c3c;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .rtl {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        @media print {
+            .sidebar, .header, .footer {
+                display: none;
+            }
+            
+            .main {
+                display: block;
+            }
+            
+            .canvas-container {
+                padding: 0;
+                overflow: visible;
+            }
+            
+            .canvas {
+                box-shadow: none;
+                margin: 0;
+                page-break-inside: avoid;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 300px;
+            }
+        }
+        
+        .urdu-font {
+            font-family: 'Noto Nastaliq Urdu', serif;
+        }
+        
+        .arabic-font {
+            font-family: 'Amiri', serif;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1 class="app-title">Islamic Poster Designer</h1>
+<button class="language-toggle" id="languageToggle">English/اردو</button>
+</div>
+
+        <div class="main">
+            <div class="sidebar">
+                <div class="panel">
+                    <div class="panel-header" id="templatesHeader">Templates</div>
+                    <div class="panel-content">
+                        <div class="template-item" data-template="admission">Admission Announcement</div>
+                        <div class="template-item" data-template="event">Event Invitation</div>
+                        <div class="template-item" data-template="course">Course Advertisement</div>
+                        <div class="template-item" data-template="blank">Blank Poster</div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-header" id="toolsHeader">Add Elements</div>
+                    <div class="panel-content">
+                        <button class="tool-button" id="addTextBtn">Add Text</button>
+                        <button class="tool-button" id="addImageBtn">Add Image</button>
+                        <input type="file" id="imageUpload" style="display: none;">
+                        <button class="tool-button" id="addShapeBtn">Add Shape</button>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-header" id="stylesHeader">Element Styles</div>
+                    <div class="panel-content" id="styleControls">
+                        <p>Select an element to edit its properties</p>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-header" id="exportHeader">Export & Save</div>
+                    <div class="panel-content">
+                        <div id="exportButtons">
+                            <button class="tool-button" id="exportPngBtn">Export PNG</button>
+                            <button class="tool-button" id="exportJpgBtn">Export JPG</button>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <button class="tool-button" id="saveDesignBtn">Save Design</button>
+                            <button class="tool-button" id="loadDesignBtn">Load Design</button>
+                            <input type="file" id="designUpload" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-header" id="settingsHeader">Page Settings</div>
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <label for="pageSizeSelect">Page Size:</label>
+                            <select id="pageSizeSelect">
+                                <option value="a4">A4 Portrait</option>
+                                <option value="a4l">A4 Landscape</option>
+                                <option value="a3">A3 Portrait</option>
+                                <option value="a3l">A3 Landscape</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        
+                        <div id="customSizeInputs" style="display: none;">
+                            <div class="form-group">
+                                <label for="customWidth">Width (px):</label>
+                                <input type="number" id="customWidth" value="800">
+                            </div>
+                            <div class="form-group">
+                                <label for="customHeight">Height (px):</label>
+                                <input type="number" id="customHeight" value="1100">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="backgroundColorPicker">Background Color:</label>
+                            <div class="color-picker">
+                                <div class="color-preview" id="bgColorPreview"></div>
+                                <input type="color" id="backgroundColorPicker" value="#ffffff">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-header" id="contactHeader">Contact Info</div>
+                    <div class="panel-content">
+                        <div class="form-group">
+                            <label for="footerText">Footer Text:</label>
+                            <textarea id="footerText" rows="3"></textarea>
+                        </div>
+                        <button class="tool-button" id="updateFooterBtn">Update Footer</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="canvas-container" id="canvasContainer">
+                <div class="canvas" id="canvas"></div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Islamic Poster Designer - Create Beautiful Posters for Your Madrasa</p>
+        </div>
+    </div>
+    
+    <script>
+        let currentLanguage = 'en';
+        let selectedElement = null;
+        let isResizing = false;
+        let isRotating = false;
+        let startX, startY, startWidth, startHeight, startLeft, startTop, startAngle;
+        let currentZIndex = 1;
+        let canvasState = [];
+        let currentStateIndex = -1;
+        
+        // Page size presets (in pixels - 96 DPI)
+        const pageSizes = {
+            a4: { width: 794, height: 1123 },
+            a4l: { width: 1123, height: 794 },
+            a3: { width: 1123, height: 1587 },
+            a3l: { width: 1587, height: 1123 },
+        };
+        
+        // Template presets
+        const templates = {
+            admission: {
+                elements: [
+                    { type: 'text', content: 'بسم الله الرحمن الرحيم', x: 400, y: 50, width: 300, height: 60, fontSize: 28, fontFamily: 'Amiri', color: '#006600', align: 'center', rtl: true, angle: 0, zIndex: 1 },
+                    { type: 'text', content: 'ADMISSION OPEN', x: 300, y: 120, width: 500, height: 80, fontSize: 56, fontFamily: 'Arial', color: '#b71c1c', align: 'center', bold: true, angle: 0, zIndex: 2 },
+                    { type: 'text', content: 'مدرسة الفلاح الإسلامية', x: 300, y: 200, width: 500, height: 60, fontSize: 42, fontFamily: 'Noto Nastaliq Urdu', color: '#006600', align: 'center', rtl: true, angle: 0, zIndex: 3 },
+                    { type: 'text', content: 'Madrasa Al-Falah Al-Islamia', x: 300, y: 270, width: 500, height: 50, fontSize: 32, fontFamily: 'Arial', color: '#333333', align: 'center', angle: 0, zIndex: 4 },
+                    { type: 'text', content: 'Courses Offered:\n-  Quran Recitation\n-  Hifz Program\n-  Islamic Studies\n-  Arabic Language', x: 200, y: 350, width: 400, height: 200, fontSize: 22, fontFamily: 'Arial', color: '#000000', angle: 0, zIndex: 5 },
+                    { type: 'text', content: 'Registration Deadline: 15th May 2025', x: 200, y: 570, width: 400, height: 40, fontSize: 24, fontFamily: 'Arial', color: '#b71c1c', bold: true, angle: 0, zIndex: 6 },
+                    { type: 'text', content: 'Contact: 0300-1234567\nEmail: info@madrasa.com\nAddress: 123 Islam Street, City', x: 200, y: 630, width: 700, height: 100, fontSize: 18, fontFamily: 'Arial', color: '#333333', angle: 0, zIndex: 7 }
+                ],
+                background: '#ffffff'
+            },
+            event: {
+                elements: [
+                    { type: 'text', content: 'بسم الله الرحمن الرحيم', x: 400, y: 50, width: 300, height: 60, fontSize: 28, fontFamily: 'Amiri', color: '#006600', align: 'center', rtl: true, angle: 0, zIndex: 1 },
+                    { type: 'text', content: 'ANNUAL MILAD CELEBRATION', x: 300, y: 120, width: 500, height: 80, fontSize: 42, fontFamily: 'Arial', color: '#b71c1c', align: 'center', bold: true, angle: 0, zIndex: 2 },
+                    { type: 'text', content: 'مدرسة الفلاح الإسلامية', x: 300, y: 200, width: 500, height: 60, fontSize: 42, fontFamily: 'Noto Nastaliq Urdu', color: '#006600', align: 'center', rtl: true, angle: 0, zIndex: 3 },
+                    { type: 'text', content: 'Invites you to attend', x: 300, y: 270, width: 500, height: 40, fontSize: 24, fontFamily: 'Arial', color: '#333333', italic: true, align: 'center', angle: 0, zIndex: 4 },
+                    { type: 'text', content: 'Date: 12th Rabi-ul-Awwal, 1447\nTime: After Asr Prayer\nVenue: Madrasa Main Hall', x: 300, y: 350, width: 500, height: 150, fontSize: 28, fontFamily: 'Arial', color: '#000000', align: 'center', angle: 0, zIndex: 5 },
+                    { type: 'text', content: 'Special Guest: Maulana Abdullah', x: 300, y: 500, width: 500, height: 40, fontSize: 28, fontFamily: 'Arial', color: '#006600', align: 'center', bold: true, angle: 0, zIndex: 6 },
+                    { type: 'text', content: 'All community members are cordially invited', x: 300, y: 570, width: 500, height: 40, fontSize: 20, fontFamily: 'Arial', color: '#333333', align: 'center', angle: 0, zIndex: 7 },
+                    { type: 'text', content: 'Contact: 0300-1234567\nEmail: info@madrasa.com', x: 300, y: 650, width: 500, height: 70, fontSize: 18, fontFamily: 'Arial', color: '#333333', align: 'center', angle: 0, zIndex: 8 }
+                ],
+                background: '#f9f5e3'
+            },
+            course: {
+                elements: [
+                    { type: 'text', content: 'بسم الله الرحمن الرحيم', x: 400, y: 50, width: 300, height: 60, fontSize: 28, fontFamily: 'Amiri', color: '#006600', align: 'center', rtl: true, angle: 0, zIndex: 1 },
+                    { type: 'text', content: 'NEW COURSE ANNOUNCEMENT', x: 300, y: 120, width: 500, height: 80, fontSize: 42, fontFamily: 'Arial', color: '#b71c1c', align: 'center', bold: true, angle: 0, zIndex: 2 },
+                    { type: 'text', content: 'دورة اللغة العربية', x: 300, y: 200, width: 500, height: 60, fontSize: 42, fontFamily: 'Noto Nastaliq Urdu', color: '#006600', align: 'center', rtl: true, angle: 0, zIndex: 3 },
+                    { type: 'text', content: 'Arabic Language Course', x: 300, y: 270, width: 500, height: 50, fontSize: 32, fontFamily: 'Arial', color: '#333333', align: 'center', angle: 0, zIndex: 4 },
+                    { type: 'text', content: 'Course Features:\n-  Basic to Advanced Levels\n-  Qualified Native Speakers\n-  Modern Teaching Methods\n-  Course Duration: 3 Months\n-  3 Classes per Week', x: 200, y: 350, width: 400, height: 200, fontSize: 22, fontFamily: 'Arial', color: '#000000', angle: 0, zIndex: 5 },
+                    { type: 'text', content: 'Course Fee: Rs. 2,500 per month', x: 200, y: 570, width: 400, height: 40, fontSize: 24, fontFamily: 'Arial', color: '#b71c1c', bold: true, angle: 0, zIndex: 6 },
+                    { type: 'text', content: 'Starting Date: 1st June 2025', x: 200, y: 620, width: 400, height: 40, fontSize: 24, fontFamily: 'Arial', color: '#333333', angle: 0, zIndex: 7 },
+                    { type: 'text', content: 'Limited Seats! Register Now\nContact: 0300-1234567\nEmail: info@madrasa.com', x: 200, y: 680, width: 700, height: 100, fontSize: 18, fontFamily: 'Arial', color: '#333333', angle: 0, zIndex: 8 }
+                ],
+                background: '#e8f5e9'
+            },
+            blank: {
+                elements: [
+                    { type: 'text', content: 'بسم الله الرحمن الرحيم', x: 400, y: 50, width: 300, height: 60, fontSize: 28, fontFamily: 'Amiri', color: '#006600', align: 'center', rtl: true, angle: 0, zIndex: 1 },
+                    { type: 'text', content: 'YOUR TITLE HERE', x: 300, y: 150, width: 500, height: 80, fontSize: 42, fontFamily: 'Arial', color: '#000000', align: 'center', bold: true, angle: 0, zIndex: 2 },
+                    { type: 'text', content: 'Subtitle text here', x: 300, y: 240, width: 500, height: 50, fontSize: 28, fontFamily: 'Arial', color: '#333333', align: 'center', angle: 0, zIndex: 3 }
+                ],
+                background: '#ffffff'
+            }
+        };
+        
+        // UI translations
+        const translations = {
+            en: {
+                appTitle: 'Islamic Poster Designer',
+                templates: 'Templates',
+                admission: 'Admission Announcement',
+                event: 'Event Invitation',
+                course: 'Course Advertisement',
+                blank: 'Blank Poster',
+                tools: 'Add Elements',
+                addText: 'Add Text',
+                addImage: 'Add Image',
+                addShape: 'Add Shape',
+                styles: 'Element Styles',
+                selectElement: 'Select an element to edit its properties',
+                export: 'Export & Save',
+                exportPng: 'Export PNG',
+                exportJpg: 'Export JPG',
+                saveDesign: 'Save Design',
+                loadDesign: 'Load Design',
+                settings: 'Page Settings',
+                pageSize: 'Page Size:',
+                a4Portrait: 'A4 Portrait',
+                a4Landscape: 'A4 Landscape',
+                a3Portrait: 'A3 Portrait',
+                a3Landscape: 'A3 Landscape',
+                custom: 'Custom',
+                width: 'Width (px):',
+                height: 'Height (px):',
+                bgColor: 'Background Color:',
+                contact: 'Contact Info',
+                footerText: 'Footer Text:',
+                updateFooter: 'Update Footer',
+                footer: 'Islamic Poster Designer - Create Beautiful Posters for Your Madrasa'
+            },
+            ur: {
+                appTitle: 'اسلامی پوسٹر ڈیزائنر',
+                templates: 'ٹیمپلیٹس',
+                admission: 'داخلہ اعلان',
+                event: 'تقریب کی دعوت',
+                course: 'کورس اشتہار',
+                blank: 'خالی پوسٹر',
+                tools: 'عناصر شامل کریں',
+                addText: 'متن شامل کریں',
+                addImage: 'تصویر شامل کریں',
+                addShape: 'شکل شامل کریں',
+                styles: 'عنصر اسٹائلز',
+                selectElement: 'اس کی خصوصیات میں ترمیم کرنے کے لیے عنصر منتخب کریں',
+                export: 'ایکسپورٹ اور محفوظ کریں',
+                exportPng: 'PNG ایکسپورٹ کریں',
+                exportJpg: 'JPG ایکسپورٹ کریں',
+                saveDesign: 'ڈیزائن محفوظ کریں',
+                loadDesign: 'ڈیزائن لوڈ کریں',
+                settings: 'صفحہ ترتیبات',
+                pageSize: 'صفحہ کا سائز:',
+                a4Portrait: 'A4 پورٹریٹ',
+                a4Landscape: 'A4 لینڈسکیپ',
+                a3Portrait: 'A3 پورٹریٹ',
+                a3Landscape: 'A3 لینڈسکیپ',
+                custom: 'حسب ضرورت',
+                width: 'چوڑائی (px):',
+                height: 'اونچائی (px):',
+                bgColor: 'پس منظر کا رنگ:',
+                contact: 'رابطے کی معلومات',
+                footerText: 'فوٹر متن:',
+                updateFooter: 'فوٹر اپ ڈیٹ کریں',
+                footer: 'اسلامی پوسٹر ڈیزائنر - اپنے مدرسے کے لیے خوبصورت پوسٹرز بنائیں'
+            }
+        };
+        
+        // DOM Elements
+        const canvas = document.getElementById('canvas');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const languageToggle = document.getElementById('languageToggle');
+        const addTextBtn = document.getElementById('addTextBtn');
+        const addImageBtn = document.getElementById('addImageBtn');
+        const addShapeBtn = document.getElementById('addShapeBtn');
+        const imageUpload = document.getElementById('imageUpload');
+        const styleControls = document.getElementById('styleControls');
+        const exportPngBtn = document.getElementById('exportPngBtn');
+        const exportJpgBtn = document.getElementById('exportJpgBtn');
+        const saveDesignBtn = document.getElementById('saveDesignBtn');
+        const loadDesignBtn = document.getElementById('loadDesignBtn');
+        const designUpload = document.getElementById('designUpload');
+        const pageSizeSelect = document.getElementById('pageSizeSelect');
+        const customSizeInputs = document.getElementById('customSizeInputs');
+        const customWidth = document.getElementById('customWidth');
+        const customHeight = document.getElementById('customHeight');
+        const backgroundColorPicker = document.getElementById('backgroundColorPicker');
+        const bgColorPreview = document.getElementById('bgColorPreview');
+        const footerText = document.getElementById('footerText');
+        const updateFooterBtn = document.getElementById('updateFooterBtn');
+        const templateItems = document.querySelectorAll('.template-item');
+        
+        // Initialize the app
+        function initialize() {
+            // Set up canvas size
+            setCanvasSize('a4');
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Initialize background color preview
+            bgColorPreview.style.backgroundColor = backgroundColorPicker.value;
+            
+            // Load a default template
+            loadTemplate('blank');
+            
+            // Update the UI language
+            updateLanguageUI();
+            
+            // Save initial state
+            saveState();
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Language toggle
+            languageToggle.addEventListener('click', toggleLanguage);
+            
+            // Element creation
+            addTextBtn.addEventListener('click', addTextElement);
+            addImageBtn.addEventListener('click', () => imageUpload.click());
+            addShapeBtn.addEventListener('click', addShapeElement);
+            imageUpload.addEventListener('change', handleImageUpload);
+            
+            // Canvas events
+            canvas.addEventListener('mousedown', handleCanvasMouseDown);
+            document.addEventListener('mousemove', handleCanvasMouseMove);
+            document.addEventListener('mouseup', handleCanvasMouseUp);
+            
+            // Export buttons
+            exportPngBtn.addEventListener('click', () => exportCanvas('png'));
+            exportJpgBtn.addEventListener('click', () => exportCanvas('jpg'));
+            
+            // Save/Load design
+            saveDesignBtn.addEventListener('click', saveDesignToFile);
+            loadDesignBtn.addEventListener('click', () => designUpload.click());
+            designUpload.addEventListener('change', loadDesignFromFile);
+            
+            // Page settings
+            pageSizeSelect.addEventListener('change', handlePageSizeChange);
+            customWidth.addEventListener('change', applyCustomSize);
+            customHeight.addEventListener('change', applyCustomSize);
+            backgroundColorPicker.addEventListener('change', updateBackgroundColor);
+            
+            // Footer
+            updateFooterBtn.addEventListener('click', updateCanvasFooter);
+            
+            // Templates
+            templateItems.forEach(item => {
+                item.addEventListener('click', () => loadTemplate(item.dataset.template));
+            });
+        }
+        
+        // Toggle language between English and Urdu
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'ur' : 'en';
+            updateLanguageUI();
+        }
+        
+        // Update UI text based on selected language
+        function updateLanguageUI() {
+            const t = translations[currentLanguage];
+            
+            // Update headers
+            document.querySelector('.app-title').textContent = t.appTitle;
+            document.getElementById('templatesHeader').textContent = t.templates;
+            document.getElementById('toolsHeader').textContent = t.tools;
+            document.getElementById('stylesHeader').textContent = t.styles;
+            document.getElementById('exportHeader').textContent = t.export;
+            document.getElementById('settingsHeader').textContent = t.settings;
+            document.getElementById('contactHeader').textContent = t.contact;
+            
+            // Update buttons
+            addTextBtn.textContent = t.addText;
+            addImageBtn.textContent = t.addImage;
+            addShapeBtn.textContent = t.addShape;
+            exportPngBtn.textContent = t.exportPng;
+            exportJpgBtn.textContent = t.exportJpg;
+            saveDesignBtn.textContent = t.saveDesign;
+            loadDesignBtn.textContent = t.loadDesign;
+            updateFooterBtn.textContent = t.updateFooter;
+            
+            // Update templates
+            document.querySelectorAll('.template-item').textContent = t.admission;
+            document.querySelectorAll('.template-item').textContent = t.event;
+            document.querySelectorAll('.template-item').textContent = t.course;
+            document.querySelectorAll('.template-item').textContent = t.blank;
+            
+            // Update page settings
+            document.querySelector('label[for="pageSizeSelect"]').textContent = t.pageSize;
+            pageSizeSelect.options.textContent = t.a4Portrait;
+            pageSizeSelect.options.textContent = t.a4Landscape;
+            pageSizeSelect.options.textContent = t.a3Portrait;
+            pageSizeSelect.options.textContent = t.a3Landscape;
+            pageSizeSelect.options.textContent = t.custom;
+            document.querySelector('label[for="customWidth"]').textContent = t.width;
+            document.querySelector('label[for="customHeight"]').textContent = t.height;
+            document.querySelector('label[for="backgroundColorPicker"]').textContent = t.bgColor;
+            
+            // Update footer
+            document.querySelector('label[for="footerText"]').textContent = t.footerText;
+            document.querySelector('.footer p').textContent = t.footer;
+            
+            // Update style controls
+            if (styleControls.innerHTML === translations.en.selectElement || 
+                styleControls.innerHTML === translations.ur.selectElement) {
+                styleControls.innerHTML = t.selectElement;
+            }
+            
+            // Apply RTL styling for Urdu
+            if (currentLanguage === 'ur') {
+                document.querySelectorAll('.panel-header, .template-item, label, .tool-button').forEach(el => {
+                    el.classList.add('rtl', 'urdu-font');
+                });
+            } else {
+                document.querySelectorAll('.panel-header, .template-item, label, .tool-button').forEach(el => {
+                    el.classList.remove('rtl', 'urdu-font');
+                });
+            }
+        }
+        
+        // Set canvas size based on page format
+        function setCanvasSize(format) {
+            if (format === 'custom') {
+                canvas.style.width = `${customWidth.value}px`;
+                canvas.style.height = `${customHeight.value}px`;
+                customSizeInputs.style.display = 'block';
+            } else {
+                const size = pageSizes[format];
+                canvas.style.width = `${size.width}px`;
+                canvas.style.height = `${size.height}px`;
+                customSizeInputs.style.display = 'none';
+            }
+        }
+        
+        // Handle page size change
+        function handlePageSizeChange() {
+            const selectedFormat = pageSizeSelect.value;
+            setCanvasSize(selectedFormat);
+        }
+        
+        // Apply custom size
+        function applyCustomSize() {
+            if (pageSizeSelect.value === 'custom') {
+                canvas.style.width = `${customWidth.value}px`;
+                canvas.style.height = `${customHeight.value}px`;
+            }
+        }
+        
+        // Update background color
+        function updateBackgroundColor() {
+            const color = backgroundColorPicker.value;
+            canvas.style.backgroundColor = color;
+            bgColorPreview.style.backgroundColor = color;
+        }
+        
+        // Add text element to canvas
+        function addTextElement() {
+            const element = document.createElement('div');
+            element.className = 'element text-element';
+            element.dataset.type = 'text';
+            
+            // Default styles
+            element.style.left = '100px';
+            element.style.top = '100px';
+            element.style.color = '#000000';
+            element.style.fontSize = '24px';
+            element.style.fontFamily = 'Arial';
+            element.style.zIndex = currentZIndex++;
+            element.style.transform = 'rotate(0deg)';
+            
+            element.contentEditable = true;
+            element.innerHTML = 'Edit this text';
+            
+            canvas.appendChild(element);
+            selectElement(element);
+            saveState();
+        }
+        
+        // Add image element to canvas
+        function addShapeElement() {
+            const shapes = ['rectangle', 'circle', 'triangle'];
+            const shapeType = shapes[Math.floor(Math.random() * shapes.length)];
+            
+            const element = document.createElement('div');
+            element.className = 'element shape-element';
+            element.dataset.type = 'shape';
+            element.dataset.shapeType = shapeType;
+            
+            // Default styles
+            element.style.left = '100px';
+            element.style.top = '100px';
+            element.style.width = '100px';
+            element.style.height = '100px';
+            element.style.backgroundColor = '#3498db';
+            element.style.zIndex = currentZIndex++;
+            element.style.transform = 'rotate(0deg)';
+            
+            // Apply shape-specific styles
+            if (shapeType === 'circle') {
+                element.style.borderRadius = '50%';
+            } else if (shapeType === 'triangle') {
+                element.style.width = '0';
+                element.style.height = '0';
+                element.style.backgroundColor = 'transparent';
+                element.style.borderLeft = '50px solid transparent';
+                element.style.borderRight = '50px solid transparent';
+                element.style.borderBottom = '100px solid #3498db';
+            }
+            
+            canvas.appendChild(element);
+            selectElement(element);
+            saveState();
+        }
+        
+        // Handle image upload
+        function handleImageUpload(e) {
+            const file = e.target.files;
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const element = document.createElement('div');
+                    element.className = 'element image-element';
+                    element.dataset.type = 'image';
+                    
+                    // Default styles
+                    element.style.left = '100px';
+                    element.style.top = '100px';
+                    element.style.width = '200px';
+                    element.style.height = 'auto';
+                    element.style.backgroundImage = `url(${event.target.result})`;
+                    element.style.backgroundSize = 'contain';
+                    element.style.backgroundRepeat = 'no-repeat';
+                    element.style.backgroundPosition = 'center';
+                    element.style.zIndex = currentZIndex++;
+                    element.style.transform = 'rotate(0deg)';
+                    element.dataset.src = event.target.result;
+                    
+                    canvas.appendChild(element);
+                    selectElement(element);
+                    saveState();
+                };
+                reader.readAsDataURL(file);
+            }
+            // Reset file input
+            e.target.value = '';
+        }
+        
+        // Select element and show controls
+        function selectElement(element) {
+            // Deselect previous element
+            if (selectedElement) {
+                selectedElement.classList.remove('selected');
+                
+                // Remove resize and rotate handles
+                const handles = canvas.querySelectorAll('.resize-handle, .rotate-handle');
+                handles.forEach(handle => handle.remove());
+            }
+            
+            // Select new element
+            selectedElement = element;
+            selectedElement.classList.add('selected');
+            
+            // Add resize handles
+            addResizeHandles(element);
+            
+            // Show style controls
+            showStyleControls(element);
+        }
+        
+        // Add resize and rotate handles to selected element
+        function addResizeHandles(element) {
+            const positions = ['nw', 'ne', 'se', 'sw'];
+            
+            // Add resize handles
+            positions.forEach(pos => {
+                const handle = document.createElement('div');
+                handle.className = `resize-handle resize-${pos}`;
+                handle.dataset.position = pos;
+                
+                // Position the handle
+                switch(pos) {
+                    case 'nw':
+                        handle.style.top = '-5px';
+                        handle.style.left = '-5px';
+                        handle.style.cursor = 'nwse-resize';
+                        break;
+                    case 'ne':
+                        handle.style.top = '-5px';
+                        handle.style.right = '-5px';
+                        handle.style.cursor = 'nesw-resize';
+                        break;
+                    case 'se':
+                        handle.style.bottom = '-5px';
+                        handle.style.right = '-5px';
+                        handle.style.cursor = 'nwse-resize';
+                        break;
+                    case 'sw':
+                        handle.style.bottom = '-5px';
+                        handle.style.left = '-5px';
+                        handle.style.cursor = 'nesw-resize';
+                        break;
+                }
+                
+                element.appendChild(handle);
+            });
+            
+            // Add rotate handle
+            const rotateHandle = document.createElement('div');
+            rotateHandle.className = 'rotate-handle';
+            rotateHandle.style.top = '-20px';
+            rotateHandle.style.left = '50%';
+            rotateHandle.style.transform = 'translateX(-50%)';
+            element.appendChild(rotateHandle);
+        }
+        
+        // Show style controls for the selected element
+        function showStyleControls(element) {
+            const type = element.dataset.type;
+            let controlsHTML = '';
+            
+            // Common controls
+            controlsHTML += `
+                <div class="form-group">
+                    <label>Position</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="number" id="elementX" value="${parseInt(element.style.left)}" style="width: 48%;">
+                        <input type="number" id="elementY" value="${parseInt(element.style.top)}" style="width: 48%;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Z-Index</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button id="moveForward" class="tool-button" style="flex: 1;">Forward</button>
+                        <button id="moveBackward" class="tool-button" style="flex: 1;">Backward</button>
+                    </div>
+                </div>
+            `;
+            
+            // Type-specific controls
+            if (type === 'text') {
+                // Get current styles
+                const fontFamily = element.style.fontFamily || 'Arial';
+                const fontSize = parseInt(element.style.fontSize) || 24;
+                const color = element.style.color || '#000000';
+                const isBold = element.style.fontWeight === 'bold';
+                const isItalic = element.style.fontStyle === 'italic';
+                const isUnderline = element.style.textDecoration === 'underline';
+                const isRtl = element.classList.contains('rtl');
+                const textAlign = element.style.textAlign || 'left';
+                
+                controlsHTML += `
+                    <div class="form-group">
+                        <label>Font</label>
+                        <select id="fontFamily">
+                            <option value="Arial" ${fontFamily === 'Arial' ? 'selected' : ''}>Arial</option>
+                            <option value="Times New Roman" ${fontFamily === 'Times New Roman' ? 'selected' : ''}>Times New Roman</option>
+                            <option value="Noto Nastaliq Urdu" ${fontFamily === 'Noto Nastaliq Urdu' ? 'selected' : ''}>Noto Nastaliq Urdu</option>
+                            <option value="Amiri" ${fontFamily === 'Amiri' ? 'selected' : ''}>Amiri</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Font Size</label>
+                        <input type="number" id="fontSize" value="${fontSize}">
+                    </div>
+                    <div class="form-group">
+                        <label>Color</label>
+                        <div class="color-picker">
+                            <div class="color-preview" id="textColorPreview" style="background-color: ${color};"></div>
+                            <input type="color" id="textColor" value="${color}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Text Style</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="boldToggle" class="tool-button" style="${isBold ? 'background-color: #16a085;' : ''}">B</button>
+                            <button id="italicToggle" class="tool-button" style="${isItalic ? 'background-color: #16a085;' : ''}"><em>I</em></button>
+                            <button id="underlineToggle" class="tool-button" style="${isUnderline ? 'background-color: #16a085;' : ''}"><u>U</u></button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Text Direction</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="ltrToggle" class="tool-button" style="${!isRtl ? 'background-color: #16a085;' : ''}">LTR</button>
+                            <button id="rtlToggle" class="tool-button" style="${isRtl ? 'background-color: #16a085;' : ''}">RTL</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Text Align</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="alignLeft" class="tool-button" style="${textAlign === 'left' ? 'background-color: #16a085;' : ''}">Left</button>
+                            <button id="alignCenter" class="tool-button" style="${textAlign === 'center' ? 'background-color: #16a085;' : ''}">Center</button>
+                            <button id="alignRight" class="tool-button" style="${textAlign === 'right' ? 'background-color: #16a085;' : ''}">Right</button>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'image') {
+                controlsHTML += `
+                    <div class="form-group">
+                        <label>Size</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="number" id="imageWidth" value="${parseInt(element.style.width)}" style="width: 48%;">
+                            <input type="number" id="imageHeight" value="${element.style.height === 'auto' ? '' : parseInt(element.style.height)}" style="width: 48%;" placeholder="auto">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Replace Image</label>
+                        <input type="file" id="replaceImage">
+                    </div>
+                `;
+            } else if (type === 'shape') {
+                const shapeType = element.dataset.shapeType;
+                const backgroundColor = element.style.borderBottom ? 
+                    element.style.borderBottom.split(' ') : 
+                    element.style.backgroundColor;
+                
+                controlsHTML += `
+                    <div class="form-group">
+                        <label>Size</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="number" id="shapeWidth" value="${shapeType === 'triangle' ? 100 : parseInt(element.style.width)}" style="width: 48%;">
+                            <input type="number" id="shapeHeight" value="${shapeType === 'triangle' ? 100 : parseInt(element.style.height)}" style="width: 48%;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Shape Type</label>
+                        <select id="shapeType">
+                            <option value="rectangle" ${shapeType === 'rectangle' ? 'selected' : ''}>Rectangle</option>
+                            <option value="circle" ${shapeType === 'circle' ? 'selected' : ''}>Circle</option>
+                            <option value="triangle" ${shapeType === 'triangle' ? 'selected' : ''}>Triangle</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Color</label>
+                        <div class="color-picker">
+                            <div class="color-preview" id="shapeColorPreview" style="background-color: ${backgroundColor};"></div>
+                            <input type="color" id="shapeColor" value="${backgroundColor}">
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Delete button for all elements
+            controlsHTML += `
+                <div class="form-group" style="margin-top: 1rem;">
+                    <button id="deleteElement" class="tool-button" style="background-color: #e74c3c; width: 100%;">Delete Element</button>
+                </div>
+            `;
+            
+            // Update style controls
+            styleControls.innerHTML = controlsHTML;
+            
+            // Add event listeners to controls
+            addStyleControlListeners(element);
+        }
+        
+        // Add event listeners to style controls
+        function addStyleControlListeners(element) {
+            const type = element.dataset.type;
+            
+            // Common controls
+            const elementX = document.getElementById('elementX');
+            const elementY = document.getElementById('elementY');
+            const moveForward = document.getElementById('moveForward');
+            const moveBackward = document.getElementById('moveBackward');
+            const deleteElement = document.getElementById('deleteElement');
+            
+            // Position change
+            elementX.addEventListener('change', () => {
+                element.style.left = `${elementX.value}px`;
+                saveState();
+            });
+            
+            elementY.addEventListener('change', () => {
+                element.style.top = `${elementY.value}px`;
+                saveState();
+            });
+            
+            // Z-index controls
+            moveForward.addEventListener('click', () => {
+                const zIndex = parseInt(element.style.zIndex || 0);
+                element.style.zIndex = zIndex + 1;
+                currentZIndex = Math.max(currentZIndex, zIndex + 2);
+                saveState();
+            });
+            
+            moveBackward.addEventListener('click', () => {
+                const zIndex = parseInt(element.style.zIndex || 0);
+                if (zIndex > 0) {
+                    element.style.zIndex = zIndex - 1;
+                    saveState();
+                }
+            });
+            
+            // Delete element
+            deleteElement.addEventListener('click', () => {
+                element.remove();
+                selectedElement = null;
+                styleControls.innerHTML = translations[currentLanguage].selectElement;
+                saveState();
+            });
+            
+            // Type-specific controls
+            if (type === 'text') {
+                const fontFamily = document.getElementById('fontFamily');
+                const fontSize = document.getElementById('fontSize');
+                const textColor = document.getElementById('textColor');
+                const textColorPreview = document.getElementById('textColorPreview');
+                const boldToggle = document.getElementById('boldToggle');
+                const italicToggle = document.getElementById('italicToggle');
+                const underlineToggle = document.getElementById('underlineToggle');
+                const ltrToggle = document.getElementById('ltrToggle');
+                const rtlToggle = document.getElementById('rtlToggle');
+                const alignLeft = document.getElementById('alignLeft');
+                const alignCenter = document.getElementById('alignCenter');
+                const alignRight = document.getElementById('alignRight');
+                
+                // Font family
+                fontFamily.addEventListener('change', () => {
+                    element.style.fontFamily = fontFamily.value;
+                    saveState();
+                });
+                
+                // Font size
+                fontSize.addEventListener('change', () => {
+                    element.style.fontSize = `${fontSize.value}px`;
+                    saveState();
+                });
+                
+                // Text color
+                textColor.addEventListener('change', () => {
+                    element.style.color = textColor.value;
+                    textColorPreview.style.backgroundColor = textColor.value;
+                    saveState();
+                });
+                
+                // Bold toggle
+                boldToggle.addEventListener('click', () => {
+                    if (element.style.fontWeight === 'bold') {
+                        element.style.fontWeight = 'normal';
+                        boldToggle.style.backgroundColor = '';
+                    } else {
+                        element.style.fontWeight = 'bold';
+                        boldToggle.style.backgroundColor = '#16a085';
+                    }
+                    saveState();
+                });
+                
+                // Italic toggle
+                italicToggle.addEventListener('click', () => {
+                    if (element.style.fontStyle === 'italic') {
+                        element.style.fontStyle = 'normal';
+                        italicToggle.style.backgroundColor = '';
+                    } else {
+                        element.style.fontStyle = 'italic';
+                        italicToggle.style.backgroundColor = '#16a085';
+                    }
+                    saveState();
+                });
+                
+                // Underline toggle
+                underlineToggle.addEventListener('click', () => {
+                    if (element.style.textDecoration === 'underline') {
+                        element.style.textDecoration = 'none';
+                        underlineToggle.style.backgroundColor = '';
+                    } else {
+                        element.style.textDecoration = 'underline';
+                        underlineToggle.style.backgroundColor = '#16a085';
+                    }
+                    saveState();
+                });
+                
+                // Text direction
+                ltrToggle.addEventListener('click', () => {
+                    element.classList.remove('rtl');
+                    element.style.textAlign = 'left';
+                    ltrToggle.style.backgroundColor = '#16a085';
+                    rtlToggle.style.backgroundColor = '';
+                    alignLeft.style.backgroundColor = '#16a085';
+                    alignCenter.style.backgroundColor = '';
+                    alignRight.style.backgroundColor = '';
+                    saveState();
+                });
+                
+                rtlToggle.addEventListener('click', () => {
+                    element.classList.add('rtl');
+                    element.style.textAlign = 'right';
+                    rtlToggle.style.backgroundColor = '#16a085';
+                    ltrToggle.style.backgroundColor = '';
+                    alignRight.style.backgroundColor = '#16a085';
+                    alignCenter.style.backgroundColor = '';
+                    alignLeft.style.backgroundColor = '';
+                    saveState();
+                });
+                
+                // Text align
+                alignLeft.addEventListener('click', () => {
+                    element.style.textAlign = 'left';
+                    alignLeft.style.backgroundColor = '#16a085';
+                    alignCenter.style.backgroundColor = '';
+                    alignRight.style.backgroundColor = '';
+                    saveState();
+                });
+                
+                alignCenter.addEventListener('click', () => {
+                    element.style.textAlign = 'center';
+                    alignCenter.style.backgroundColor = '#16a085';
+                    alignLeft.style.backgroundColor = '';
+                    alignRight.style.backgroundColor = '';
+                    saveState();
+                });
+                
+                alignRight.addEventListener('click', () => {
+                    element.style.textAlign = 'right';
+                    alignRight.style.backgroundColor = '#16a085';
+                    alignLeft.style.backgroundColor = '';
+                    alignCenter.style.backgroundColor = '';
+                    saveState();
+                });
+                
+            } else if (type === 'image') {
+                const imageWidth = document.getElementById('imageWidth');
+                const imageHeight = document.getElementById('imageHeight');
+                const replaceImage = document.getElementById('replaceImage');
+                
+                // Image size
+                imageWidth.addEventListener('change', () => {
+                    element.style.width = `${imageWidth.value}px`;
+                    saveState();
+                });
+                
+                imageHeight.addEventListener('change', () => {
+                    element.style.height = imageHeight.value ? `${imageHeight.value}px` : 'auto';
+                    saveState();
+                });
+                
+                // Replace image
+                replaceImage.addEventListener('change', (e) => {
+                    const file = e.target.files;
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            element.style.backgroundImage = `url(${event.target.result})`;
+                            element.dataset.src = event.target.result;
+                            saveState();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+                
+            } else if (type === 'shape') {
+                const shapeWidth = document.getElementById('shapeWidth');
+                const shapeHeight = document.getElementById('shapeHeight');
+                const shapeType = document.getElementById('shapeType');
+                const shapeColor = document.getElementById('shapeColor');
+                const shapeColorPreview = document.getElementById('shapeColorPreview');
+                
+                // Shape size
+                shapeWidth.addEventListener('change', () => {
+                    const width = parseInt(shapeWidth.value);
+                    if (element.dataset.shapeType === 'triangle') {
+                        element.style.borderLeft = `${width/2}px solid transparent`;
+                        element.style.borderRight = `${width/2}px solid transparent`;
+                    } else {
+                        element.style.width = `${width}px`;
+                    }
+                    saveState();
+                });
+                
+                shapeHeight.addEventListener('change', () => {
+                    const height = parseInt(shapeHeight.value);
+                    if (element.dataset.shapeType === 'triangle') {
+                        element.style.borderBottom = `${height}px solid ${shapeColor.value}`;
+                    } else {
+                        element.style.height = `${height}px`;
+                    }
+                    saveState();
+                });
+                
+                // Shape type
+                shapeType.addEventListener('change', () => {
+                    const newType = shapeType.value;
+                    element.dataset.shapeType = newType;
+                    
+                    // Reset styles
+                    element.style.borderRadius = '';
+                    element.style.width = '';
+                    element.style.height = '';
+                    element.style.borderLeft = '';
+                    element.style.borderRight = '';
+                    element.style.borderBottom = '';
+                    element.style.backgroundColor = shapeColor.value;
+                    
+                    // Apply new shape styles
+                    if (newType === 'rectangle') {
+                        element.style.width = `${shapeWidth.value}px`;
+                        element.style.height = `${shapeHeight.value}px`;
+                    } else if (newType === 'circle') {
+                        element.style.width = `${shapeWidth.value}px`;
+                        element.style.height = `${shapeHeight.value}px`;
+                        element.style.borderRadius = '50%';
+                    } else if (newType === 'triangle') {
+                        element.style.width = '0';
+                        element.style.height = '0';
+                        element.style.backgroundColor = 'transparent';
+                        element.style.borderLeft = `${parseInt(shapeWidth.value)/2}px solid transparent`;
+                        element.style.borderRight = `${parseInt(shapeWidth.value)/2}px solid transparent`;
+                        element.style.borderBottom = `${shapeHeight.value}px solid ${shapeColor.value}`;
+                    }
+                    
+                    saveState();
+                });
+                
+                // Shape color
+                shapeColor.addEventListener('change', () => {
+                    const color = shapeColor.value;
+                    shapeColorPreview.style.backgroundColor = color;
+                    
+                    if (element.dataset.shapeType === 'triangle') {
+                        element.style.borderBottom = element.style.borderBottom.replace(/rgb$[^)]+$|#[0-9a-f]{3,6}/i, color);
+                    } else {
+                        element.style.backgroundColor = color;
+                    }
+                    
+                    saveState();
+                });
+            }
+        }
+        
+        // Handle mouse down on canvas
+        function handleCanvasMouseDown(e) {
+            // Check if we clicked on an element
+            let targetElement = e.target;
+            
+            // Clicked on resize handle
+            if (targetElement.classList.contains('resize-handle')) {
+                isResizing = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                const parentEl = targetElement.parentElement;
+                startWidth = parseInt(parentEl.style.width) || parentEl.offsetWidth;
+                startHeight = parseInt(parentEl.style.height) || parentEl.offsetHeight;
+                startLeft = parseInt(parentEl.style.left);
+                startTop = parseInt(parentEl.style.top);
+                
+                return;
+            }
+            
+            // Clicked on rotate handle
+           if (targetElement.classList.contains('rotate-handle')) {
+    isRotating = true;
+    
+    // Get center of element
+    const rect = selectedElement.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    
+    // Get current angle
+    const transform = selectedElement.style.transform;
+    let currentAngle = 0;
+    if (transform) {
+        const match = transform.match(/rotate\(([^)]+)deg\)/);
+        if (match) {
+            currentAngle = parseFloat(match[1]);
+        }
+    }
+    startAngle = currentAngle;
+
+    // Get start angle between center and mouse
+    const startRadians = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+    startAngle = startAngle - (startRadians * 180 / Math.PI);
+
+    return;
+}
+            
+            // Find closest element (may be child of an element)
+            while (targetElement !== canvas && !targetElement.classList.contains('element')) {
+                targetElement = targetElement.parentElement;
+                if (!targetElement) break;
+            }
+            
+            // If we found an element
+            if (targetElement !== canvas && targetElement.classList.contains('element')) {
+                // Select the element
+                selectElement(targetElement);
+                
+                // Start dragging
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = parseInt(targetElement.style.left);
+                startTop = parseInt(targetElement.style.top);
+            } else {
+                // Clicked on canvas, deselect the currently selected element
+selectedElement = null;
+styleControls.innerHTML = translations[currentLanguage].selectElement;
+}
+}
+
+        // Handle mouse move on canvas
+        function handleCanvasMouseMove(e) {
+            if (isResizing) {
+                // Update width and height
+                let newWidth = startWidth + (e.clientX - startX);
+                let newHeight = startHeight + (e.clientY - startY);
+                
+                // Maintain aspect ratio for images
+                let imageElement = selectedElement;
+                if (imageElement.dataset.type === 'image') {
+                    const aspectRatio = startWidth / startHeight;
+                    if ((e.clientX - startX) < 0) {
+                        if ((e.clientY - startY) > 0) {
+                            if (aspectRatio >= 1) {
+                                newHeight = newWidth / aspectRatio;
+                            } else {
+                                newWidth = newHeight * aspectRatio;
+                            }
+                        } else {
+                            if (aspectRatio >= 1) {
+                                newHeight = Math.abs(e.clientX - startX) / aspectRatio;
+                            } else {
+                                newWidth = Math.abs(e.clientY - startY) * aspectRatio;
+                            }
+                        }
+                    } else {
+                        if ((e.clientY - startY) > 0) {
+                            if (aspectRatio >= 1) {
+                                newHeight = newWidth / aspectRatio;
+                            } else {
+                                newWidth = newHeight * aspectRatio;
+                            }
+                        } else {
+                            if (aspectRatio >= 1) {
+                                newHeight = Math.abs(e.clientX - startX) / aspectRatio;
+                            } else {
+                                newWidth = Math.abs(e.clientY - startY) * aspectRatio;
+                            }
+                        }
+                    }
+                }
+                
+                selectedElement.style.width = `${newWidth}px`;
+                selectedElement.style.height = `${newHeight}px`;
+                selectedElement.style.left = `${startLeft}px`;
+                selectedElement.style.top = `${startTop}px`;
+                
+                saveState();
+                
+                return;
+            }
+            
+            if (isRotating) {
+                // Rotate element
+                const rect = selectedElement.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                const angleRadians = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+                const newAngle = startAngle - (angleRadians * 180 / Math.PI);
+                
+                selectedElement.style.transform = `rotate(${newAngle}deg)`;
+                
+                saveState();
+                
+                return;
+            }
+            
+            if (selectedElement) {
+                // Move element
+                const newLeft = startLeft + (e.clientX - startX);
+                const newTop = startTop + (e.clientY - startY);
+                
+                selectedElement.style.left = `${newLeft}px`;
+                selectedElement.style.top = `${newTop}px`;
+                
+                saveState();
+            }
+        }
+        
+        // Handle mouse up on canvas
+        function handleCanvasMouseUp() {
+            isResizing = false;
+            isRotating = false;
+        }
+        
+        // Export canvas to image
+        function exportCanvas(type) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = parseInt(document.getElementById('canvas').style.width.replace('px', ''));
+            canvas.height = parseInt(document.getElementById('canvas').style.height.replace('px', ''));
+            
+            const overlay = document.createElement('div');
+            overlay.style.position = 'absolute';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = `${canvas.width}px`;
+            overlay.style.height = `${canvas.height}px`;
+            overlay.style.background = document.getElementById('canvas').style.background;
+            
+            // Get all elements as images or render them onto the canvas directly
+            const elements = Array.from(document.querySelectorAll('.element'));
+            elements.forEach(element => {
+                let image;
+                
+                if (element.dataset.type === 'text') {
+                    const textContent = element.textContent;
+                    const textElement = document.createElement('canvas');
+                    const textCtx = textElement.getContext('2d');
+                    textElement.width = element.offsetWidth;
+                    textElement.height = element.offsetHeight;
+                    
+                    // Draw the text
+                    textCtx.font = `${element.style.fontSize || '24px'} ${element.style.fontFamily || 'Arial'}`;
+                    textCtx.fillStyle = element.style.color || '#000000';
+                    textCtx.textAlign = element.style.textAlign || 'left';
+                    textCtx.textBaseline = 'top';
+                    
+                    if (element.classList.contains('rtl')) {
+                        textCtx.textAlign = 'right';
+                    }
+                    
+                    textCtx.fillText(textContent, 0, 0);
+                    
+                    // Render onto the main canvas
+                    ctx.drawImage(textElement, parseInt(element.style.left), parseInt(element.style.top));
+                    
+                } else if (element.dataset.type === 'image') {
+                    const img = new Image();
+                    img.src = element.dataset.src;
+                    image = img;
+                    
+                    // Wait for image load and then draw it
+                    img.onload = () => {
+                        ctx.drawImage(img, parseInt(element.style.left), parseInt(element.style.top), parseInt(element.style.width) || canvas.width, parseInt(element.style.height) || canvas.height);
+                        
+                        // Save the image
+                        const link = document.createElement('a');
+                        link.download = `poster.${type}`;
+                        link.href = canvas.toDataURL(type === 'jpg' ? 'image/jpeg' : 'image/png');
+                        link.click();
+                    };
+                    
+                    return;
+                } else if (element.dataset.type === 'shape') {
+                    const shapeType = element.dataset.shapeType;
+                    
+                    if (shapeType === 'rectangle') {
+                        ctx.fillStyle = element.style.backgroundColor || '#000000';
+                    } else if (shapeType === 'circle') {
+                        ctx.fillStyle = element.style.backgroundColor || '#000000';
+                        ctx.beginPath();
+                        ctx.arc(parseInt(element.style.left) + parseInt(element.style.width)/2, parseInt(element.style.top) + parseInt(element.style.height)/2, Math.min(parseInt(element.style.width)/2, parseInt(element.style.height)/2), 0, 2 * Math.PI);
+                    } else if (shapeType === 'triangle') {
+                        ctx.fillStyle = element.style.borderBottom.split(' ');
+                        ctx.beginPath();
+                        ctx.moveTo(parseInt(element.style.left) + parseInt(element.style.width)/2, parseInt(element.style.top));
+                        ctx.lineTo(parseInt(element.style.left), parseInt(element.style.top) + parseInt(element.style.height));
+                        ctx.lineTo(parseInt(element.style.left) + parseInt(element.style.width), parseInt(element.style.top) + parseInt(element.style.height));
+                    }
+                    
+                    ctx.fill();
+                }
+            });
+            
+            // Directly create and save the image without waiting for image loads to ensure we get all elements
+            if (!image) {
+                const link = document.createElement('a');
+                link.download = `poster.${type}`;
+                link.href = canvas.toDataURL(type === 'jpg' ? 'image/jpeg' : 'image/png');
+                link.click();
+            }
+        }
+        
+        // Save design to file
+        function saveDesignToFile() {
+            const design = {
+                elements: Array.from(canvas.children).map(element => {
+                    const data = {
+                        type: element.dataset.type,
+                        
+                        // Common properties
+                        left: parseInt(element.style.left),
+                        top: parseInt(element.style.top),
+                        zIndex: parseInt(element.style.zIndex),
+                    };
+                    
+                    if (element.dataset.type === 'text') {
+                        data.content = element.textContent;
+                        data.fontSize = parseInt(element.style.fontSize);
+                        data.fontFamily = element.style.fontFamily;
+                        data.color = element.style.color;
+                        data.bold = element.style.fontWeight === 'bold';
+                        data.italic = element.style.fontStyle === 'italic';
+                        data.rtl = element.classList.contains('rtl');
+                        data.align = element.style.textAlign;
+                    } else if (element.dataset.type === 'image') {
+                        data.src = element.dataset.src;
+                        data.width = parseInt(element.style.width);
+                    } else if (element.dataset.type === 'shape') {
+                        data.shapeType = element.dataset.shapeType;
+                        data.width = parseInt(element.style.width);
+                        data.height = parseInt(element.style.height);
+                        data.color = element.style.borderBottom ? 
+                            element.style.borderBottom.split(' ') : 
+                            element.style.backgroundColor;
+                    }
+                    
+                    return data;
+                }),
+                background: canvas.style.background,
+            };
+            
+            const blob = new Blob([JSON.stringify(design)], {type: 'application/json'});
+            const link = document.createElement('a');
+            link.download = 'design.json';
+            link.href = URL.createObjectURL(blob);
+            link.click();
+        }
+        
+        // Load design from file
+        function loadDesignFromFile(e) {
+            const file = e.target.files;
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const design = JSON.parse(event.target.result);
+                    canvas.innerHTML = '';
+                    design.elements.forEach(element => {
+                        let newElement;
+                        
+                        if (element.type === 'text') {
+                            newElement = document.createElement('div');
+                            newElement.contentEditable = true;
+                            newElement.textContent = element.content;
+                            newElement.style.left = `${element.left}px`;
+                            newElement.style.top = `${element.top}px`;
+                            newElement.style.fontSize = `${element.fontSize}px`;
+                            newElement.style.fontFamily = element.fontFamily;
+                            newElement.style.color = element.color;
+                            newElement.style.zIndex = element.zIndex;
+                            newElement.style.fontWeight = element.bold ? 'bold' : 'normal';
+                            newElement.style.fontStyle = element.italic ? 'italic' : 'normal';
+                            if (element.rtl) {
+                                newElement.classList.add('rtl');
+                                newElement.style.textAlign = 'right';
+                            } else {
+                                newElement.style.textAlign = element.align || 'left';
+                            }
+                            newElement.dataset.type = 'text';
+                            newElement.className = 'element text-element';
+                        } else if (element.type === 'image') {
+                            newElement = document.createElement('div');
+                            newElement.style.left = `${element.left}px`;
+                            newElement.style.top = `${element.top}px`;
+                            newElement.style.width = `${element.width}px`;
+                            newElement.style.backgroundImage = `url(${element.src})`;
+                            newElement.style.backgroundSize = 'contain';
+                            newElement.style.backgroundRepeat = 'no-repeat';
+                            newElement.style.backgroundPosition = 'center';
+                            newElement.style.zIndex = element.zIndex;
+                            newElement.dataset.src = element.src;
+                            newElement.dataset.type = 'image';
+                            newElement.className = 'element image-element';
+                        } else if (element.type === 'shape') {
+                            newElement = document.createElement('div');
+                            newElement.style.left = `${element.left}px`;
+                            newElement.style.top = `${element.top}px`;
+                            newElement.style.width = `${element.width}px`;
+                            newElement.style.height = `${element.height}px`;
+                            newElement.style.zIndex = element.zIndex;
+                            newElement.dataset.shapeType = element.shapeType;
+                            
+                            if (element.shapeType === 'rectangle') {
+                                newElement.style.backgroundColor = element.color;
+                            } else if (element.shapeType === 'circle') {
+                                newElement.style.borderRadius = '50%';
+                                newElement.style.backgroundColor = element.color;
+                            } else if (element.shapeType === 'triangle') {
+                                newElement.style.borderLeft = `${element.width/2}px solid transparent`;
+                                newElement.style.borderRight = `${element.width/2}px solid transparent`;
+                                newElement.style.borderBottom = `${element.height}px solid ${element.color}`;
+                            }
+                            newElement.dataset.type = 'shape';
+                            newElement.className = 'element shape-element';
+                        }
+                        
+                        canvas.appendChild(newElement);
+                    });
+                    
+                    canvas.style.background = design.background;
+                    
+                    saveState();
+                };
+                reader.readAsText(file);
+            }
+            // Reset file input
+            e.target.value = '';
+        }
+        
+        // Load a template onto the canvas
+        function loadTemplate(templateName) {
+            const template = templates[templateName];
+            canvas.innerHTML = '';
+            template.elements.forEach(element => {
+                let newElement;
+				
+if (element.type === 'text') {
+newElement = document.createElement('div');
+newElement.contentEditable = true;
+newElement.textContent = element.content;
+newElement.style.left = `${element.x}px`;
+newElement.style.top = `${element.y}px`;
+newElement.style.width = `${element.width}px`;
+newElement.style.height = `${element.height}px`;
+newElement.style.fontSize = `${element.fontSize}px`;
+newElement.style.fontFamily = element.fontFamily;
+newElement.style.color = element.color;
+newElement.style.zIndex = element.zIndex;
+newElement.style.fontWeight = element.bold ? 'bold' : 'normal';
+newElement.style.fontStyle = element.italic ? 'italic' : 'normal';
+newElement.style.textAlign = element.align || 'left';
+if (element.rtl) {
+newElement.classList.add('rtl');
+newElement.style.textAlign = 'right';
+}
+newElement.dataset.type = 'text';
+newElement.className = 'element text-element';
+
+                    if (element.angle) {
+                        newElement.style.transform = `rotate(${element.angle}deg)`;
+                    }
+                    
+                } else if (element.type === 'image') {
+                    newElement = document.createElement('div');
+                    newElement.style.left = `${element.x}px`;
+                    newElement.style.top = `${element.y}px`;
+                    newElement.style.width = `${element.width}px`;
+                    newElement.style.height = element.height ? `${element.height}px` : 'auto';
+                    newElement.style.backgroundImage = `url(${element.src})`;
+                    newElement.style.backgroundSize = 'contain';
+                    newElement.style.backgroundRepeat = 'no-repeat';
+                    newElement.style.backgroundPosition = 'center';
+                    newElement.style.zIndex = element.zIndex;
+                    newElement.dataset.src = element.src;
+                    newElement.dataset.type = 'image';
+                    newElement.className = 'element image-element';
+                    
+                    if (element.angle) {
+                        newElement.style.transform = `rotate(${element.angle}deg)`;
+                    }
+                    
+                } else if (element.type === 'shape') {
+                    newElement = document.createElement('div');
+                    newElement.style.left = `${element.x}px`;
+                    newElement.style.top = `${element.y}px`;
+                    newElement.style.width = `${element.width}px`;
+                    newElement.style.height = `${element.height}px`;
+                    newElement.style.zIndex = element.zIndex;
+                    newElement.dataset.shapeType = element.shapeType;
+                    
+                    if (element.shapeType === 'rectangle') {
+                        newElement.style.backgroundColor = element.color;
+                    } else if (element.shapeType === 'circle') {
+                        newElement.style.borderRadius = '50%';
+                        newElement.style.backgroundColor = element.color;
+                    } else if (element.shapeType === 'triangle') {
+                        newElement.style.borderLeft = `${element.width/2}px solid transparent`;
+                        newElement.style.borderRight = `${element.width/2}px solid transparent`;
+                        newElement.style.borderBottom = `${element.height}px solid ${element.color}`;
+                    }
+                    newElement.dataset.type = 'shape';
+                    newElement.className = 'element shape-element';
+                    
+                    if (element.angle) {
+                        newElement.style.transform = `rotate(${element.angle}deg)`;
+                    }
+                }
+                
+                canvas.appendChild(newElement);
+            });
+            
+            canvas.style.background = template.background;
+            
+            saveState();
+        }
+        
+        // Update footer text on the canvas
+        function updateCanvasFooter() {
+            const footerTextContent = footerText.value;
+            
+            // Check if footer text already exists
+            const existingFooter = canvas.querySelector('.footer-text');
+            
+            if (existingFooter) {
+                existingFooter.textContent = footerTextContent;
+            } else {
+                const newFooter = document.createElement('div');
+                newFooter.textContent = footerTextContent;
+                newFooter.classList.add('footer-text');
+                newFooter.style.position = 'absolute';
+                newFooter.style.bottom = '10px';
+                newFooter.style.left = '10px';
+                newFooter.style.color = '#aaaaaa';
+                canvas.appendChild(newFooter);
+            }
+        }
+        
+        // Save canvas state (undo functionality)
+        function saveState() {
+            const currentState = {
+                elements: Array.from(canvas.children).map(element => {
+                    const data = {
+                        type: element.dataset.type,
+                        left: parseInt(element.style.left),
+                        top: parseInt(element.style.top),
+                        width: parseInt(element.style.width),
+                        height: parseInt(element.style.height),
+                        zIndex: parseInt(element.style.zIndex),
+                    };
+                    
+                    if (element.dataset.type === 'text') {
+                        data.content = element.textContent;
+                        data.fontSize = parseInt(element.style.fontSize);
+                        data.fontFamily = element.style.fontFamily;
+                        data.color = element.style.color;
+                        data.bold = element.style.fontWeight === 'bold';
+                        data.italic = element.style.fontStyle === 'italic';
+                        data.rtl = element.classList.contains('rtl');
+                        data.align = element.style.textAlign;
+                        data.angle = element.style.transform && element.style.transform.includes('rotate') ? parseInt(element.style.transform.match(/rotate$([^)]+)$/)) : 0;
+                    } else if (element.dataset.type === 'image') {
+                        data.src = element.dataset.src;
+                        data.angle = element.style.transform && element.style.transform.includes('rotate') ? parseInt(element.style.transform.match(/rotate$([^)]+)$/)) : 0;
+                    } else if (element.dataset.type === 'shape') {
+                        data.shapeType = element.dataset.shapeType;
+                        data.color = element.style.borderBottom ? 
+                            element.style.borderBottom.split(' ') : 
+                            element.style.backgroundColor;
+                        data.angle = element.style.transform && element.style.transform.includes('rotate') ? parseInt(element.style.transform.match(/rotate$([^)]+)$/)) : 0;
+                    }
+                    
+                    return data;
+                }),
+                background: canvas.style.background,
+            };
+            
+            canvasState.push(currentState);
+            currentStateIndex++;
+        }
+        
+        // Undo functionality (to be implemented)
+        function undo() {
+            if (currentStateIndex > 0) {
+                currentStateIndex--;
+                const previousState = canvasState[currentStateIndex];
+                
+                // Clear canvas
+                canvas.innerHTML = '';
+                
+                // Restore previous state
+                previousState.elements.forEach(element => {
+                    let newElement;
+                    
+                    if (element.type === 'text') {
+                        newElement = document.createElement('div');
+                        newElement.contentEditable = true;
+                        newElement.textContent = element.content;
+                        newElement.style.left = `${element.left}px`;
+                        newElement.style.top = `${element.top}px`;
+                        newElement.style.width = `${element.width}px`;
+                        newElement.style.height = `${element.height}px`;
+                        newElement.style.fontSize = `${element.fontSize}px`;
+                        newElement.style.fontFamily = element.fontFamily;
+                        newElement.style.color = element.color;
+                        newElement.style.zIndex = element.zIndex;
+                        newElement.style.fontWeight = element.bold ? 'bold' : 'normal';
+                        newElement.style.fontStyle = element.italic ? 'italic' : 'normal';
+                        newElement.style.textAlign = element.align;
+                        if (element.rtl) {
+                            newElement.classList.add('rtl');
+                            newElement.style.textAlign = 'right';
+                        }
+                        if (element.angle) {
+                            newElement.style.transform = `rotate(${element.angle}deg)`;
+                        }
+                        newElement.dataset.type = 'text';
+                        newElement.className = 'element text-element';
+                    } else if (element.type === 'image') {
+                        newElement = document.createElement('div');
+                        newElement.style.left = `${element.left}px`;
+                        newElement.style.top = `${element.top}px`;
+                        newElement.style.width = `${element.width}px`;
+                        newElement.style.height = element.height ? `${element.height}px` : 'auto';
+                        newElement.style.backgroundImage = `url(${element.src})`;
+                        newElement.style.backgroundSize = 'contain';
+                        newElement.style.backgroundRepeat = 'no-repeat';
+                        newElement.style.backgroundPosition = 'center';
+                        newElement.style.zIndex = element.zIndex;
+                        newElement.dataset.src = element.src;
+                        if (element.angle) {
+                            newElement.style.transform = `rotate(${element.angle}deg)`;
+                        }
+                        newElement.dataset.type = 'image';
+                        newElement.className = 'element image-element';
+                    } else if (element.type === 'shape') {
+                        newElement = document.createElement('div');
+                        newElement.style.left = `${element.left}px`;
+                        newElement.style.top = `${element.top}px`;
+                        newElement.style.width = `${element.width}px`;
+                        newElement.style.height = `${element.height}px`;
+                        newElement.style.zIndex = element.zIndex;
+                        newElement.dataset.shapeType = element.shapeType;
+                        
+                        if (element.shapeType === 'rectangle') {
+                            newElement.style.backgroundColor = element.color;
+                        } else if (element.shapeType === 'circle') {
+                            newElement.style.borderRadius = '50%';
+                            newElement.style.backgroundColor = element.color;
+                        } else if (element.shapeType === 'triangle') {
+                            newElement.style.borderLeft = `${element.width/2}px solid transparent`;
+                            newElement.style.borderRight = `${element.width/2}px solid transparent`;
+                            newElement.style.borderBottom = `${element.height}px solid ${element.color}`;
+                        }
+                        if (element.angle) {
+                            newElement.style.transform = `rotate(${element.angle}deg)`;
+                        }
+                        newElement.dataset.type = 'shape';
+                        newElement.className = 'element shape-element';
+                    }
+                    
+                    canvas.appendChild(newElement);
+                });
+                
+                canvas.style.background = previousState.background;
+                
+                // Update current index if undoing exceeds the limit
+                if (currentStateIndex + 1 < canvasState.length) {
+                    canvasState.splice(currentStateIndex + 1);
+                }
+            }
+        }
+        
+        // Initialize the app
+        initialize();
+    </script>
+    </body>
+</html>

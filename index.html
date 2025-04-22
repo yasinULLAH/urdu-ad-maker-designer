@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Urdu Poster Creator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Noto Nastaliq Urdu', serif;
+    }
+    
+    body {
+      direction: rtl;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    
+    .controls {
+      margin-bottom: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    button {
+      padding: 8px 15px;
+      margin: 5px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    
+    button.danger {
+      background-color: #dc3545;
+    }
+    
+    .poster {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #bdf5c1;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    
+    .title-container {
+      background-color: #ffee00;
+      padding: 10px;
+      text-align: center;
+      border-radius: 15px;
+      margin-bottom: 20px;
+      position: relative;
+      border: 2px solid #000;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .announcement {
+      position: absolute;
+      top: -15px;
+      right: 10px;
+      background-color: #000;
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 8px;
+      transform: rotate(5deg);
+      font-size: 14px;
+    }
+    
+    .title {
+      font-size: 36px;
+      font-weight: bold;
+      margin: 0;
+    }
+    
+    .subtitle-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .subtitle {
+      font-size: 18px;
+      flex: 1;
+      text-align: center;
+    }
+    
+    .main-content {
+      background-color: #a3e9a3;
+      border-radius: 15px;
+      padding: 20px;
+      position: relative;
+      min-height: 300px;
+      border: 1px solid #000;
+    }
+
+    .content-boxes-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .content-box {
+      width: calc(50% - 8px);
+      background-color: rgba(255, 255, 255, 0.6);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 15px;
+      position: relative;
+      border: 1px solid #007700;
+    }
+    
+    .content-box-title {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+      background-color: #ddeedd;
+      padding: 5px;
+      border-radius: 5px;
+    }
+    
+    .content-box-body {
+      min-height: 100px;
+    }
+    
+    .teachers-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      margin-top: 20px;
+    }
+    
+    .teacher {
+      background-color: #7b2e00;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 30px;
+      margin: 5px;
+      text-align: center;
+      position: relative;
+    }
+    
+    .contact-container {
+      margin-top: 20px;
+      text-align: center;
+    }
+    
+    .contact {
+      display: inline-block;
+      margin: 5px 10px;
+    }
+    
+    .editable {
+      border: none;
+      background: transparent;
+      outline: none;
+      width: 100%;
+      text-align: inherit;
+      font-size: inherit;
+      color: inherit;
+      font-family: inherit;
+    }
+    
+    .editable:focus {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    .edit-mode .editable {
+      border: 1px dashed #999;
+    }
+    
+    .edit-controls {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: none;
+    }
+    
+    .edit-mode .edit-controls {
+      display: block;
+    }
+    
+    .teacher-edit-btn, .contact-edit-btn, .content-box-edit-btn {
+      font-size: 12px;
+      padding: 2px 5px;
+      margin: 2px;
+    }
+    
+    .add-btn {
+      border: 2px dashed #666;
+      background: transparent;
+      color: #666;
+      font-size: 20px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: none;
+      cursor: pointer;
+    }
+    
+    .edit-mode .add-btn {
+      display: inline-block;
+    }
+    
+    @media print, .print-mode {
+      .controls, .edit-controls, .add-btn {
+        display: none !important;
+      }
+      
+      .editable {
+        border: none !important;
+      }
+      
+      body {
+        background: white;
+        padding: 0;
+      }
+      
+      .poster {
+        box-shadow: none;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .title {
+        font-size: 28px;
+      }
+      
+      .subtitle {
+        font-size: 14px;
+      }
+      
+      .content-box {
+        width: 100%;
+      }
+    }
+	#add-teacher{
+	    background: url('data:image/svg+xml;utf8,<svg fill="%23666" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="20" r="12"/><path d="M8 56c0-13 10-20 24-20s24 7 24 20"/></svg>') no-repeat center center;
+	}
+	#add-contact{
+		background: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' fill='%23666' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M391 351c-20 0-39-3-57-9a20 20 0 0 0-20 5l-41 41c-49-26-88-66-114-114l41-41a20 20 0 0 0 5-20c-6-18-9-37-9-57a20 20 0 0 0-20-20H121a20 20 0 0 0-20 20c0 180 146 326 326 326a20 20 0 0 0 20-20v-75a20 20 0 0 0-20-20h-56z'/%3E%3C/svg%3E") center/20px no-repeat;
+
+	}
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button id="edit-toggle">تدوین موڈ</button>
+    <button id="export-btn">تصویر برآمد کریں</button>
+    <button id="reset-btn" class="danger">ڈیفالٹ پر ری سیٹ کریں</button>
+    <button id="add-content-box">مواد باکس شامل کریں</button>
+  </div>
+  
+  <div class="poster" id="poster">
+    <div class="title-container">
+      <div class="announcement">
+        <span class="editable" id="announcement">اعلان داخلہ</span>
+      </div>
+      <h1 class="title">
+        <span class="editable" id="main-title">دارالعلوم زکریا</span>
+      </h1>
+    </div>
+    
+    <div class="subtitle-container">
+      <div class="subtitle">
+        <span class="editable" id="subtitle-right">علمی و عملی سرگرمیاں</span>
+      </div>
+      <div class="subtitle">
+        <span class="editable" id="subtitle-left">کر لیک روزنو دی پیل دو میل</span>
+      </div>
+    </div>
+    
+    <div class="main-content">
+      <div class="content-boxes-container" id="content-boxes-container">
+        <!-- Content boxes will be added dynamically -->
+      </div>
+      
+      <div style="text-align: center; margin-top: 10px;">
+        <span class="editable" id="content-title">دارالفتاء والقضاء</span>
+      </div>
+      
+      <div class="teachers-container" id="teachers-container">
+        <!-- Teachers will be added dynamically -->
+      </div>
+      
+      <div class="contact-container" id="contact-container">
+        <!-- Contacts will be added dynamically -->
+      </div>
+      
+      <button class="add-btn" id="add-teacher">+</button>
+      <button class="add-btn" id="add-contact">+</button>
+    </div>
+  </div>
+
+  <script>
+    const defaultData = {
+      announcement: 'اعلان داخلہ',
+      mainTitle: 'دارالعلوم زکریا',
+      subtitleRight: 'علمی و عملی سرگرمیاں',
+      subtitleLeft: 'کر لیک روزنو دی پیل دو میل',
+      contentTitle: 'دارالفتاء والقضاء',
+      contentBoxes: [
+        { id: 1, title: 'تاریخ داخلہ', body: 'اخول 1 تا اخول 8' },
+        { id: 2, title: 'قواعد و ضوابط', body: 'قاعدہ و ضابطہ کی پابندی لازمی ہے' }
+      ],
+      teachers: [
+        { id: 1, name: 'مدرسین حضرات' },
+        { id: 2, name: 'مفتی محمد جاوید' },
+        { id: 3, name: 'مفتی حسین اللہ' },
+        { id: 4, name: 'قاری عبیداللہ' },
+        { id: 5, name: 'قاری محمد عمر' },
+        { id: 6, name: 'مولانا مفتی صاحب' }
+      ],
+      contacts: [
+        { id: 1, number: '03364041841' },
+        { id: 2, number: '03319327288' }
+      ]
+    };
+
+    let appData = JSON.parse(localStorage.getItem('urduPosterData')) || {...defaultData};
+    let editMode = false;
+
+    // Initialize app
+    function init() {
+      document.getElementById('announcement').textContent = appData.announcement;
+      document.getElementById('main-title').textContent = appData.mainTitle;
+      document.getElementById('subtitle-right').textContent = appData.subtitleRight;
+      document.getElementById('subtitle-left').textContent = appData.subtitleLeft;
+      document.getElementById('content-title').textContent = appData.contentTitle;
+      
+      renderContentBoxes();
+      renderTeachers();
+      renderContacts();
+      
+      document.getElementById('edit-toggle').addEventListener('click', toggleEditMode);
+      document.getElementById('export-btn').addEventListener('click', exportToImage);
+      document.getElementById('reset-btn').addEventListener('click', resetToDefault);
+      document.getElementById('add-teacher').addEventListener('click', addNewTeacher);
+      document.getElementById('add-contact').addEventListener('click', addNewContact);
+      document.getElementById('add-content-box').addEventListener('click', addNewContentBox);
+      
+      // Make all editable fields save on blur
+      document.querySelectorAll('.editable').forEach(el => {
+        el.addEventListener('blur', function() {
+          saveChanges();
+        });
+        el.addEventListener('input', function() {
+          saveChanges();
+        });
+      });
+      
+      // Handle paste events to maintain styling
+      document.addEventListener('paste', function(e) {
+        if (e.target.classList.contains('editable')) {
+          e.preventDefault();
+          const text = e.clipboardData.getData('text/plain');
+          document.execCommand('insertText', false, text);
+          saveChanges();
+        }
+      });
+    }
+
+    function renderContentBoxes() {
+      const container = document.getElementById('content-boxes-container');
+      container.innerHTML = '';
+      
+      if (!appData.contentBoxes || appData.contentBoxes.length === 0) {
+        appData.contentBoxes = defaultData.contentBoxes.slice();
+      }
+      
+      appData.contentBoxes.forEach(box => {
+        const boxEl = document.createElement('div');
+        boxEl.className = 'content-box';
+        boxEl.dataset.id = box.id;
+        
+        boxEl.innerHTML = `
+          <div class="content-box-title">
+            <span class="editable" contenteditable="${editMode}">${box.title}</span>
+          </div>
+          <div class="content-box-body">
+            <span class="editable" contenteditable="${editMode}">${box.body}</span>
+          </div>
+          <div class="edit-controls">
+            <button class="content-box-edit-btn" onclick="deleteContentBox(${box.id})">حذف</button>
+          </div>
+        `;
+        
+        container.appendChild(boxEl);
+        
+        // Add event listeners to save changes when editing content boxes
+        boxEl.querySelectorAll('.editable').forEach(el => {
+          el.addEventListener('blur', saveChanges);
+          el.addEventListener('input', saveChanges);
+        });
+      });
+    }
+
+    function renderTeachers() {
+      const container = document.getElementById('teachers-container');
+      container.innerHTML = '';
+      
+      appData.teachers.forEach(teacher => {
+        const teacherEl = document.createElement('div');
+        teacherEl.className = 'teacher';
+        teacherEl.dataset.id = teacher.id;
+        
+        teacherEl.innerHTML = `
+          <span class="editable" contenteditable="${editMode}">${teacher.name}</span>
+          <div class="edit-controls">
+            <button class="teacher-edit-btn" onclick="deleteTeacher(${teacher.id})">حذف</button>
+          </div>
+        `;
+        
+        container.appendChild(teacherEl);
+      });
+    }
+
+    function renderContacts() {
+      const container = document.getElementById('contact-container');
+      container.innerHTML = '';
+      
+      appData.contacts.forEach(contact => {
+        const contactEl = document.createElement('div');
+        contactEl.className = 'contact';
+        contactEl.dataset.id = contact.id;
+        
+        contactEl.innerHTML = `
+          <span class="editable" contenteditable="${editMode}">${contact.number}</span>
+          <div class="edit-controls">
+            <button class="contact-edit-btn" onclick="deleteContact(${contact.id})">حذف</button>
+          </div>
+        `;
+        
+        container.appendChild(contactEl);
+      });
+    }
+
+    function toggleEditMode() {
+      editMode = !editMode;
+      document.getElementById('poster').classList.toggle('edit-mode', editMode);
+      
+      const editableElements = document.querySelectorAll('.editable');
+      editableElements.forEach(el => {
+        el.setAttribute('contenteditable', editMode);
+      });
+      
+      document.getElementById('edit-toggle').textContent = editMode ? 'تدوین موڈ بند کریں' : 'تدوین موڈ';
+      
+      renderContentBoxes();
+      renderTeachers();
+      renderContacts();
+    }
+
+    function saveChanges() {
+      appData.announcement = document.getElementById('announcement').textContent;
+      appData.mainTitle = document.getElementById('main-title').textContent;
+      appData.subtitleRight = document.getElementById('subtitle-right').textContent;
+      appData.subtitleLeft = document.getElementById('subtitle-left').textContent;
+      appData.contentTitle = document.getElementById('content-title').textContent;
+      
+      // Save content boxes with innerHTML to preserve formatting
+      const contentBoxElements = document.querySelectorAll('.content-box');
+      appData.contentBoxes = Array.from(contentBoxElements).map(el => {
+        return {
+          id: parseInt(el.dataset.id),
+          title: el.querySelector('.content-box-title .editable').innerHTML,
+          body: el.querySelector('.content-box-body .editable').innerHTML
+        };
+      });
+      
+      // Save teachers
+      const teacherElements = document.querySelectorAll('.teacher');
+      appData.teachers = Array.from(teacherElements).map(el => {
+        return {
+          id: parseInt(el.dataset.id),
+          name: el.querySelector('.editable').textContent
+        };
+      });
+      
+      // Save contacts
+      const contactElements = document.querySelectorAll('.contact');
+      appData.contacts = Array.from(contactElements).map(el => {
+        return {
+          id: parseInt(el.dataset.id),
+          number: el.querySelector('.editable').textContent
+        };
+      });
+      
+      localStorage.setItem('urduPosterData', JSON.stringify(appData));
+    }
+
+    function addNewContentBox() {
+      if (!appData.contentBoxes) appData.contentBoxes = [];
+      const newId = Math.max(0, ...appData.contentBoxes.map(b => b.id)) + 1;
+      appData.contentBoxes.push({ id: newId, title: 'عنوان', body: 'مواد یہاں لکھیں' });
+      renderContentBoxes();
+      saveChanges();
+    }
+
+    function deleteContentBox(id) {
+      appData.contentBoxes = appData.contentBoxes.filter(b => b.id !== id);
+      renderContentBoxes();
+      saveChanges();
+    }
+
+    function addNewTeacher() {
+      const newId = Math.max(0, ...appData.teachers.map(t => t.id)) + 1;
+      appData.teachers.push({ id: newId, name: 'نیا استاد' });
+      renderTeachers();
+      saveChanges();
+    }
+
+    function deleteTeacher(id) {
+      appData.teachers = appData.teachers.filter(t => t.id !== id);
+      renderTeachers();
+      saveChanges();
+    }
+
+    function addNewContact() {
+      const newId = Math.max(0, ...appData.contacts.map(c => c.id)) + 1;
+      appData.contacts.push({ id: newId, number: '03000000000' });
+      renderContacts();
+      saveChanges();
+    }
+
+    function deleteContact(id) {
+      appData.contacts = appData.contacts.filter(c => c.id !== id);
+      renderContacts();
+      saveChanges();
+    }
+
+    function resetToDefault() {
+      if (confirm('کیا آپ واقعی ڈیفالٹ ڈیٹا پر ری سیٹ کرنا چاہتے ہیں؟')) {
+        appData = {...defaultData};
+        localStorage.setItem('urduPosterData', JSON.stringify(appData));
+        init();
+      }
+    }
+
+    function exportToImage() {
+      const poster = document.getElementById('poster');
+      poster.classList.add('print-mode');
+      
+      html2canvas(poster, {
+        scale: 2,  // 2x resolution for better quality
+        useCORS: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const img = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = 'urdu-poster.png';
+        link.href = img;
+        link.click();
+        
+        poster.classList.remove('print-mode');
+      });
+    }
+
+    // Initialize app on load
+    window.onload = init;
+	
+	
+	// Select the element
+const el = document.getElementById('content-title');
+
+// SVG data for a mosque-arch style border (top arch, sides, and bottom)
+const mosqueBorderSVG = `
+<svg viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
+  <path d="M5,75 
+    Q25,40 75,40 
+    Q90,10 150,10 
+    Q210,10 225,40 
+    Q275,40 295,75 
+    L295,75 L5,75 Z"
+    fill="none" stroke="green" stroke-width="4"/>
+</svg>
+`;
+
+// Create a data URL for the SVG
+const svgUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent(mosqueBorderSVG);
+
+// Apply styles with JS only
+el.style.display = "inline-block";
+el.style.padding = "28px 40px 30px 40px";
+el.style.position = "relative";
+el.style.backgroundRepeat = "no-repeat";
+el.style.backgroundImage = `url('${svgUrl}')`;
+el.style.backgroundSize = "100% 100%";
+el.style.backgroundPosition = "center center";
+el.style.border = "none";
+el.style.borderRadius = "0";
+el.style.boxSizing = "border-box";
+
+
+// Function to arrange content boxes based on their count
+function arrangeContentBoxes() {
+  const container = document.getElementById('content-boxes-container');
+  const contentBoxes = container.querySelectorAll('.content-box');
+  const totalBoxes = contentBoxes.length;
+  
+  // Reset all boxes to default styling
+  contentBoxes.forEach(box => {
+    box.style.width = '';
+    box.style.flexBasis = '';
+  });
+  
+  if (totalBoxes === 0) return;
+  
+  if (totalBoxes === 1) {
+    // Single box gets full width
+    contentBoxes[0].style.width = '100%';
+  } else {
+    const isOdd = totalBoxes % 2 !== 0;
+    const pairsCount = Math.floor(totalBoxes / 2);
+    
+    // Set all boxes to be half width (minus gap)
+    contentBoxes.forEach((box, index) => {
+      // If odd total and this is the last box, make it full width
+      if (isOdd && index === totalBoxes - 1) {
+        box.style.flexBasis = '100%';
+      } else {
+        // Calculate width for paired boxes (accounting for gap)
+        box.style.flexBasis = 'calc(50% - 8px)';
+      }
+    });
+  }
+}
+
+// Run the arrangement function initially
+document.addEventListener('DOMContentLoaded', arrangeContentBoxes);
+
+// Update the arrangement whenever content boxes are added or removed
+const contentBoxesObserver = new MutationObserver(arrangeContentBoxes);
+contentBoxesObserver.observe(document.getElementById('content-boxes-container'), {
+  childList: true
+});
+
+// Add event listeners to existing buttons that might add/remove content boxes
+document.querySelectorAll('.content-box-edit-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Allow time for the DOM to update after deletion
+    setTimeout(arrangeContentBoxes, 0);
+  });
+});
+
+// If you have an "Add content box" button, add this listener
+const addContentBoxBtn = document.querySelector('button[onclick*="addContentBox"]');
+if (addContentBoxBtn) {
+  addContentBoxBtn.addEventListener('click', () => {
+    // Allow time for the DOM to update after addition
+    setTimeout(arrangeContentBoxes, 0);
+  });
+}
+
+// Enhance the deleteContentBox function if it exists
+if (typeof deleteContentBox === 'function') {
+  const originalDeleteContentBox = deleteContentBox;
+  window.deleteContentBox = function(id) {
+    originalDeleteContentBox(id);
+    arrangeContentBoxes();
+  };
+}
+
+// Similarly enhance any function that adds content boxes
+if (typeof addContentBox === 'function') {
+  const originalAddContentBox = addContentBox;
+  window.addContentBox = function() {
+    originalAddContentBox();
+    arrangeContentBoxes();
+  };
+}
+
+
+  </script>
+</body>
+</html>

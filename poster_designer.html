@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urdu Poster Editor - Enhanced</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        :root {
+            --header-bg: #d2f294; /* Light yellowish-green */
+            --title-bg: #d2f294;
+            --center-bg: #e0f5b3; /* Lighter green */
+            --teachers-bg: #c4d79b; /* Muted green/brownish */
+            --footer-bg: #3b3838; /* Dark grey/near black */
+            --text-dark: #000000;
+            --text-light: #ffffff;
+            --urdu-font: 'Noto Nastaliq Urdu', serif;
+            --border-color: #a0a0a0;
+            --button-bg: #4CAF50;
+            --button-text: white;
+            --delete-bg: #f44336;
+            --edit-bg: #ff9800;
+            --list-item-bg: #fdfdfd;
+        }
+
+        body {
+            font-family: var(--urdu-font);
+            direction: rtl;
+            text-align: right;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            line-height: 1.8;
+        }
+
+        .poster-wrapper {
+            max-width: 800px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: white; /* Ensure canvas background isn't transparent */
+        }
+
+        #poster-container {
+            border: 2px solid var(--text-dark);
+            overflow: hidden; /* Contain elements */
+        }
+
+        /* --- Poster Sections --- */
+        .poster-header {
+            background-color: var(--header-bg);
+            padding: 5px 15px;
+            text-align: center;
+            border-bottom: 2px solid var(--text-dark);
+            position: relative;
+        }
+
+        .admission-tag {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: #ffeb3b; /* Yellow */
+            color: var(--text-dark);
+            padding: 2px 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            border-left: 2px solid var(--text-dark);
+            border-bottom: 2px solid var(--text-dark);
+        }
+
+        .poster-title-section {
+            background-color: var(--title-bg);
+            text-align: center;
+            padding: 20px;
+            border-bottom: 2px solid var(--text-dark);
+        }
+
+        .poster-title-section h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        .poster-title-section .subtitle {
+            font-size: 1.3em;
+            margin-top: 10px;
+            color: var(--text-dark);
+        }
+
+        /* Container for subtitle2 items */
+        #subtitle2-items-container {
+            padding: 15px;
+            border-bottom: 2px solid var(--text-dark);
+            background-color: var(--title-bg); /* Same as title section */
+        }
+         #subtitle2-items-container h2,
+         #center-items-container h2 {
+             text-align: center;
+             font-size: 1.5em;
+             margin-bottom: 15px;
+             font-weight: bold;
+         }
+
+
+        .poster-main-content {
+            background-color: var(--center-bg);
+            padding: 20px;
+            border-bottom: 2px solid var(--text-dark);
+            min-height: 100px;
+        }
+
+        /* Container for center items */
+        #center-items-container {
+             padding: 15px;
+        }
+
+        .poster-teachers-section {
+            background-color: var(--teachers-bg);
+            padding: 15px;
+            text-align: center;
+             border-bottom: 2px solid var(--text-dark);
+        }
+
+        .poster-teachers-section h3 {
+             font-size: 1.6em;
+             font-weight: bold;
+             margin-bottom: 15px;
+             background-color: var(--footer-bg); /* Darker background for title */
+             color: var(--text-light);
+             padding: 5px 10px;
+             display: inline-block;
+             border-radius: 5px;
+        }
+
+        #teachers-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Styling for Column Lists (Subtitle2 and Center Items) */
+        #subtitle2-items-list,
+        #center-items-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px; /* Spacing between items */
+            justify-content: flex-start; /* Align items to the start */
+        }
+
+        #subtitle2-items-list li,
+        #center-items-list li {
+             flex: 1 1 calc(33.33% - 10px); /* Three columns, accounting for gap */
+             min-width: 180px; /* Prevent items from becoming too narrow */
+             box-sizing: border-box; /* Include padding and border in element's total width/height */
+        }
+
+
+        /* Common List Item Styling */
+         #teachers-list li,
+         #contacts-list li,
+         #announcements-list li,
+         #subtitle2-items-list li,
+         #center-items-list li {
+            position: relative;
+            padding: 10px;
+            margin-bottom: 5px; /* Only relevant if wrapping */
+            background-color: var(--list-item-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            word-wrap: break-word;
+            padding-bottom: 40px; /* Space for buttons */
+            text-align: right; /* Ensure text within li is right-aligned */
+        }
+
+        /* Heading/Body styles within list items */
+        .item-heading {
+            font-size: 1.15em;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: var(--text-dark);
+        }
+        .item-body {
+            font-size: 1em;
+            margin: 0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        #teachers-list li .teacher-name {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            text-align: center; /* Center teacher names */
+        }
+
+
+        .poster-footer {
+            background-color: var(--footer-bg);
+            color: var(--text-light);
+            padding: 15px;
+            font-size: 1.1em;
+        }
+
+        #announcements-list,
+        #contacts-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0 0;
+        }
+         #contacts-list {
+             display: flex;
+             justify-content: space-around;
+             flex-wrap: wrap;
+             gap: 15px;
+             margin-top: 15px;
+         }
+
+         #contacts-list li {
+            padding: 8px 15px;
+            font-weight: bold;
+            font-size: 1.2em;
+            background-color: var(--text-light);
+            color: var(--text-dark);
+            border: 2px solid var(--text-dark);
+            text-align: center;
+            flex-basis: auto; /* Contacts don't need column sizing */
+         }
+
+         #announcements-list li {
+             background-color: transparent;
+             border: none;
+             color: var(--text-light);
+             text-align: center;
+             padding: 2px 0;
+             padding-bottom: 30px; /* Space for buttons */
+             width: 100%;
+         }
+
+
+        /* --- CRUD Controls --- */
+        [contenteditable="true"] {
+            outline: 1px dashed var(--border-color);
+            cursor: text;
+            padding: 2px 5px;
+            display: inline-block; /* Ensure outline wraps content */
+            min-width: 20px; /* Prevent collapsing when empty */
+        }
+        [contenteditable="true"]:focus {
+            outline: 2px solid var(--button-bg);
+            background-color: #f0f8ff;
+        }
+
+        .controls { /* General controls below poster */
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #e0e0e0;
+            border-radius: 5px;
+        }
+
+        .control-button, .add-button, .edit-button, .delete-button {
+            font-family: var(--urdu-font);
+            padding: 8px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .control-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+        }
+         .control-button.reset {
+             background-color: var(--edit-bg);
+         }
+
+        /* Add button specific styles */
+        .add-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            display: block;
+            margin: 15px auto 5px auto; /* Center add buttons within their sections */
+            width: fit-content; /* Size button to content */
+        }
+
+        .edit-button, .delete-button {
+            position: absolute;
+            bottom: 8px; /* Position buttons at the bottom */
+            font-size: 0.8em;
+            padding: 3px 6px;
+        }
+
+        .edit-button {
+            background-color: var(--edit-bg);
+            color: var(--button-text);
+            right: 50px; /* Position edit button */
+        }
+
+        .delete-button {
+            background-color: var(--delete-bg);
+            color: var(--button-text);
+            right: 8px; /* Position delete button */
+        }
+
+        /* Hide controls during export and printing */
+        .exporting .edit-button,
+        .exporting .delete-button,
+        .exporting .edit-delete-controls, /* Covers the wrapper div if used */
+        .exporting .add-button,           /* Hide add buttons */
+        .exporting #controls {            /* Hide main controls div */
+            display: none !important;
+        }
+        .exporting [contenteditable="true"] {
+            outline: none !important; /* Hide outline during export */
+            cursor: default;
+        }
+
+
+        @media print {
+            body {
+                padding: 0;
+                margin: 0;
+                background-color: white;
+                 -webkit-print-color-adjust: exact; /* Ensure backgrounds print in Chrome/Safari */
+                 print-color-adjust: exact; /* Standard */
+            }
+            .poster-wrapper {
+                max-width: 100%;
+                margin: 0;
+                border: none;
+                box-shadow: none;
+            }
+            .controls, .add-button, .edit-button, .delete-button, .edit-delete-controls {
+                display: none !important; /* Ensure they are hidden */
+            }
+             [contenteditable="true"] {
+                outline: none !important;
+             }
+             #poster-container {
+                 border: none; /* Remove border for print */
+             }
+        }
+
+        /* Responsive adjustments for columns */
+        @media (max-width: 768px) { /* Tablet */
+            #subtitle2-items-list li,
+            #center-items-list li {
+                 flex-basis: calc(50% - 8px); /* Two columns */
+                 min-width: 160px;
+            }
+             .poster-title-section h1 { font-size: 2.2em; }
+             .poster-title-section .subtitle { font-size: 1.1em; }
+             .poster-teachers-section h3 { font-size: 1.4em; }
+        }
+
+        @media (max-width: 480px) { /* Mobile */
+            body { padding: 5px; }
+            #subtitle2-items-list li,
+            #center-items-list li {
+                 flex-basis: 100%; /* One column */
+                 min-width: unset;
+                 margin-bottom: 10px;
+            }
+             .poster-title-section h1 { font-size: 1.8em; }
+             .poster-title-section .subtitle { font-size: 1em; }
+             #teachers-list li { min-width: 100px; font-size: 0.9em; }
+             .poster-footer { font-size: 0.9em; }
+             #contacts-list li { font-size: 1em; padding: 5px 10px; }
+             .control-button, .add-button { padding: 6px 10px; font-size: 0.9em; }
+             .edit-button, .delete-button { font-size: 0.7em; padding: 2px 4px; right: 5px; }
+             .edit-button { bottom: 22px; } /* Adjust vertical stacking */
+             #teachers-list li, #contacts-list li, #announcements-list li,
+             #subtitle2-items-list li, #center-items-list li {
+                 padding-bottom: 45px; /* More space for stacked buttons */
+             }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="poster-wrapper">
+        <div id="poster-container">
+            <header class="poster-header">
+                 <div contenteditable="true" id="admission-tag" class="admission-tag">اعلانِ داخلہ</div>
+            </header>
+
+            <section class="poster-title-section">
+                <h1 contenteditable="true" id="main-title">دارالعلوم زکریا</h1>
+                <p contenteditable="true" id="subtitle1" class="subtitle">لنک روڈ نزد ڈی پی ڈو میل</p>
+                 <div id="subtitle2-items-container">
+                     <h2>ذیلی عنوانات / سرگرمیاں</h2>
+                     <ul id="subtitle2-items-list">
+                         </ul>
+                     <button class="add-button" data-list="subtitle2Items">سرگرمی شامل کریں</button>
+                 </div>
+            </section>
+
+            <main class="poster-main-content">
+                 <div id="center-items-container">
+                    <h2>مرکزی مواد / شعبہ جات</h2>
+                    <ul id="center-items-list">
+                        </ul>
+                    <button class="add-button" data-list="centerItems">مواد شامل کریں</button>
+                </div>
+            </main>
+
+            <section class="poster-teachers-section">
+                <h3 contenteditable="true" id="teachers-title">مدرسین حضرات</h3>
+                <ul id="teachers-list">
+                    </ul>
+                <button class="add-button" data-list="teachers">استاد شامل کریں</button>
+            </section>
+
+            <footer class="poster-footer">
+                <div id="announcements-section">
+                     <h4>اعلانات / تاریخ:</h4>
+                    <ul id="announcements-list">
+                        </ul>
+                    <button class="add-button" data-list="announcements">اعلان شامل کریں</button>
+                </div>
+                 <hr style="border-color: rgba(255,255,255,0.5); margin: 15px 0;">
+                <div id="contacts-section">
+                     <h4>رابطہ نمبر:</h4>
+                    <ul id="contacts-list">
+                        </ul>
+                    <button class="add-button" data-list="contacts">رابطہ نمبر شامل کریں</button>
+                 </div>
+            </footer>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="export-button" class="control-button">پوسٹر بطور تصویر ایکسپورٹ کریں</button>
+        <button id="reset-button" class="control-button reset">پہلے سے طے شدہ پر ری سیٹ کریں</button>
+        <p style="font-size: 0.8em; margin-top: 10px;">تبدیلیاں خود بخود محفوظ ہو جاتی ہیں۔ ریسائز/روٹیٹ فیچر شامل نہیں ہے۔</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const posterContainer = document.getElementById('poster-container');
+            const exportButton = document.getElementById('export-button');
+            const resetButton = document.getElementById('reset-button');
+
+            const defaultData = {
+                'admission-tag': 'اعلانِ داخلہ',
+                'main-title': 'دارالعلوم زکریا',
+                'subtitle1': 'لنک روڈ نزد ڈی پی ڈو میل',
+                // 'subtitle2': 'علمی و عملی سرگرمیاں', // Replaced by subtitle2Items
+                // 'center-title': 'دارالافتاء والقضاء', // Replaced by centerItems
+                'teachers-title': 'مدرسین حضرات',
+                'subtitle2Items': [ // Example data for the new list
+                    { heading: 'شعبہ حفظ القرآن', body: 'ناظرہ و حفظ بمع تجوید' },
+                    { heading: 'شعبہ کتب', body: 'درس نظامی مکمل' },
+                    { heading: 'کمپیوٹر کورس', body: 'جدید کمپیوٹر لیب کی سہولت' }
+                ],
+                 'centerItems': [ // Example data for the new list
+                    { heading: 'دارالافتاء والقضاء', body: 'شرعی مسائل کا حل بذریعہ فتویٰ' },
+                    { heading: 'تحقیق و تصنیف', body: 'علمی و تحقیقی مقالہ جات' }
+                ],
+                'teachers': ['مفتی تحسین اللہ صاحب', 'مفتی محمد جاوید صاحب', 'قاری وحید اللہ', 'قاری محمد شبیر', 'مولانا شفیع الرحمن', 'مفتی عبد الجلیل صاحب'],
+                'announcements': ['تاریخ داخلہ: - ۱ شوال سے لیکر ۱۷ شوال تک۔ ۱۸ شوال سے باقاعدہ اسباق کی افتتاح ہوگی ان شاء الله۔'],
+                'contacts': ['03364041841', '03319327288']
+            };
+
+            let currentData = {};
+
+            // --- Data Handling ---
+            function saveData() {
+                // Save contenteditable fields (excluding the ones replaced by lists)
+                document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                    // Only save simple contenteditable fields, not list containers
+                    if (el.id && !el.id.includes('-list') && !el.id.includes('-container')) {
+                         currentData[el.id] = el.innerHTML;
+                    }
+                });
+                // List data is already updated in currentData by add/edit/delete
+                localStorage.setItem('urduPosterData', JSON.stringify(currentData));
+                console.log("Data saved to localStorage");
+            }
+
+            function loadData() {
+                const savedData = localStorage.getItem('urduPosterData');
+                currentData = savedData ? JSON.parse(savedData) : JSON.parse(JSON.stringify(defaultData));
+
+                // Ensure list arrays exist even if loading old data without them
+                 if (!currentData.subtitle2Items) currentData.subtitle2Items = [];
+                 if (!currentData.centerItems) currentData.centerItems = [];
+                 if (!currentData.teachers) currentData.teachers = [];
+                 if (!currentData.announcements) currentData.announcements = [];
+                 if (!currentData.contacts) currentData.contacts = [];
+
+                console.log("Data loaded:", currentData);
+                renderPoster();
+            }
+
+            function resetData() {
+                if (confirm("کیا آپ واقعی تمام تبدیلیوں کو حذف کرکے ڈیفالٹ پوسٹر پر ری سیٹ کرنا چاہتے ہیں؟")) {
+                    localStorage.removeItem('urduPosterData');
+                    currentData = JSON.parse(JSON.stringify(defaultData));
+                    renderPoster();
+                    console.log("Data reset to default");
+                }
+            }
+
+            // --- Rendering ---
+            function renderPoster() {
+                // Render simple contenteditable fields
+                document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                     if (el.id && !el.id.includes('-list') && !el.id.includes('-container') && currentData[el.id] !== undefined) {
+                        el.innerHTML = currentData[el.id];
+                    }
+                });
+
+                // Render lists
+                renderList('subtitle2-items-list', currentData.subtitle2Items || [], renderListItemWithHeadingBody);
+                renderList('center-items-list', currentData.centerItems || [], renderListItemWithHeadingBody);
+                renderList('teachers-list', currentData.teachers || [], renderTeacherItem);
+                renderList('announcements-list', currentData.announcements || [], renderSimpleListItem); // Simple list item
+                renderList('contacts-list', currentData.contacts || [], renderSimpleListItem);       // Simple list item
+
+                // Add blur event listeners for saving simple contenteditable fields
+                 document.querySelectorAll('[contenteditable="true"]').forEach(el => {
+                     if (el.id && !el.id.includes('-list') && !el.id.includes('-container')) {
+                        el.removeEventListener('blur', saveData); // Prevent duplicates
+                        el.addEventListener('blur', saveData);
+                    }
+                });
+            }
+
+            function renderList(listId, items, itemRenderer) {
+                const listElement = document.getElementById(listId);
+                if (!listElement) {
+                    console.error("List element not found:", listId);
+                    return;
+                }
+                listElement.innerHTML = ''; // Clear existing items
+                const listType = listId.replace('-list', '').replace('-items',''); // Determine type (e.g., 'subtitle2', 'center', 'teachers')
+                items.forEach((item, index) => {
+                    const listItem = itemRenderer(item, index, listType);
+                    listElement.appendChild(listItem);
+                });
+            }
+
+            // Renderer for items with Heading and Body (object structure)
+             function renderListItemWithHeadingBody(item, index, type) {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div>
+                       <h4 class="item-heading">${item.heading || ''}</h4>
+                       <p class="item-body">${item.body || ''}</p>
+                    </div>
+                    <div class="edit-delete-controls">
+                        <button class="edit-button" data-index="${index}" data-type="${type}">ترمیم</button>
+                        <button class="delete-button" data-index="${index}" data-type="${type}">حذف کریں</button>
+                    </div>
+                `;
+                return li;
+            }
+
+             // Renderer for simple string list items (like announcements, contacts)
+             function renderSimpleListItem(item, index, type) {
+                const li = document.createElement('li');
+                 // Special case for teachers list for centering name
+                const isTeacher = type === 'teachers';
+                const contentClass = isTeacher ? 'teacher-name' : '';
+
+                li.innerHTML = `
+                    <span class="${contentClass}" data-index="${index}">${item}</span>
+                     <div class="edit-delete-controls">
+                        <button class="edit-button" data-index="${index}" data-type="${type}">ترمیم</button>
+                        <button class="delete-button" data-index="${index}" data-type="${type}">حذف کریں</button>
+                    </div>
+                `;
+                return li;
+            }
+             // Renderer for teacher items (kept separate in case of future specific needs)
+             function renderTeacherItem(item, index, type) {
+                return renderSimpleListItem(item, index, type); // Use the simple renderer for now
+             }
+
+
+            // --- CRUD Operations for Lists ---
+            function addItem(type) {
+                let newItem;
+                if (type === 'centerItems' || type === 'subtitle2Items') {
+                    const heading = prompt(`براہ کرم نیا ${getUrduType(type)} کا عنوان درج کریں:`);
+                    if (heading === null) return; // User cancelled
+                    const body = prompt(`براہ کرم نیا ${getUrduType(type)} کی تفصیل درج کریں:`);
+                     if (body === null) return; // User cancelled
+                    newItem = { heading: heading.trim(), body: body.trim() };
+                } else {
+                    const value = prompt(`براہ کرم نیا ${getUrduType(type)} درج کریں:`);
+                    if (value === null || value.trim() === '') return; // User cancelled or entered empty
+                    newItem = value.trim();
+                }
+
+                if (!currentData[type]) currentData[type] = [];
+                currentData[type].push(newItem);
+                renderPoster();
+                saveData();
+            }
+
+            function editItem(type, index) {
+                const currentItem = currentData[type][index];
+                let editedItem;
+
+                 if (typeof currentItem === 'object' && currentItem !== null) { // Handle object items (heading/body)
+                     const newHeading = prompt(`عنوان میں ترمیم کریں:`, currentItem.heading);
+                     if (newHeading === null) return;
+                     const newBody = prompt(`تفصیل میں ترمیم کریں:`, currentItem.body);
+                     if (newBody === null) return;
+                     editedItem = { heading: newHeading.trim(), body: newBody.trim() };
+                 } else { // Handle simple string items
+                     const newValue = prompt(`براہ کرم ${getUrduType(type)} میں ترمیم کریں:`, currentItem);
+                     if (newValue === null || newValue.trim() === '') return;
+                     editedItem = newValue.trim();
+                 }
+
+                currentData[type][index] = editedItem;
+                renderPoster();
+                saveData();
+            }
+
+            function deleteItem(type, index) {
+                 const itemToDelete = currentData[type][index];
+                 const confirmMsg = `کیا آپ واقعی اس ${getUrduType(type)} کو حذف کرنا چاہتے ہیں؟\n"${typeof itemToDelete === 'object' ? itemToDelete.heading : itemToDelete}"`;
+                if (confirm(confirmMsg)) {
+                    currentData[type].splice(index, 1);
+                    renderPoster();
+                    saveData();
+                }
+            }
+
+            function getUrduType(type) {
+                switch(type) {
+                    case 'teachers': return 'استاد کا نام';
+                    case 'contacts': return 'رابطہ نمبر';
+                    case 'announcements': return 'اعلان';
+                    case 'subtitle2Items': return 'سرگرمی'; // Adjust naming as needed
+                    case 'centerItems': return 'مواد'; // Adjust naming as needed
+                    default: return 'آئٹم';
+                }
+            }
+
+
+            // --- Event Listeners ---
+            posterContainer.addEventListener('click', (event) => {
+                const target = event.target;
+                // Use closest to find the button even if click is on icon/span inside
+                const editButton = target.closest('.edit-button');
+                const deleteButton = target.closest('.delete-button');
+                const addButton = target.closest('.add-button'); // Handle add buttons inside poster
+
+                if (editButton) {
+                     const type = editButton.dataset.type;
+                     const index = parseInt(editButton.dataset.index, 10);
+                     editItem(type, index);
+                } else if (deleteButton) {
+                     const type = deleteButton.dataset.type;
+                     const index = parseInt(deleteButton.dataset.index, 10);
+                     deleteItem(type, index);
+                } else if (addButton) {
+                     const type = addButton.dataset.list; // Add buttons have data-list
+                     addItem(type);
+                }
+            });
+
+            // No need for separate Add button listeners if using delegation above
+
+            resetButton.addEventListener('click', resetData);
+
+            exportButton.addEventListener('click', () => {
+                console.log("Export button clicked");
+                document.body.classList.add('exporting');
+
+                 // Small delay to allow CSS changes to apply before rendering
+                setTimeout(() => {
+                    html2canvas(posterContainer, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff',
+                        scrollX: 0, // Try setting scroll positions to 0
+                        scrollY: -window.scrollY, // Adjust for page scroll
+                        windowWidth: posterContainer.scrollWidth, // Use scroll dimensions
+                        windowHeight: posterContainer.scrollHeight
+                    }).then(canvas => {
+                        console.log("Canvas generated");
+                        const link = document.createElement('a');
+                        link.download = 'urdu-poster.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                        console.log("Image download triggered");
+                        document.body.classList.remove('exporting');
+                    }).catch(err => {
+                        console.error("Error exporting poster:", err);
+                        alert("پوسٹر ایکسپورٹ کرنے میں خرابی آگئی۔ براہ کرم کنسول چیک کریں۔");
+                        document.body.classList.remove('exporting');
+                    });
+                }, 100); // 100ms delay
+            });
+
+            // --- Initial Load ---
+            loadData();
+        });
+    </script>
+
+</body>
+</html>

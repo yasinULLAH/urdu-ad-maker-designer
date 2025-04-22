@@ -1,0 +1,586 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="ur">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Urdu Poster CRUD App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Noto Nastaliq Urdu', serif;
+      direction: rtl;
+      line-height: 1.5;
+    }
+    body {
+      background: linear-gradient(135deg, #e6f0e6 0%, #d0e0d0 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    #poster-container {
+      width: 100%;
+      max-width: 900px;
+      background: #b5e3b5;
+      border: 8px double #f0d7a7;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      position: relative;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+    #poster {
+      padding: 30px;
+      position: relative;
+      background: #c5e8c5;
+    }
+    .title-section {
+      background: #f7e050;
+      padding: 15px;
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #000;
+      border: 3px solid #000;
+      border-radius: 10px;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .title-section::before {
+      content: 'اعلان!';
+      position: absolute;
+      top: -20px;
+      left: 20px;
+      background: #f7e050;
+      padding: 5px 10px;
+      border: 2px solid #000;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      transform: rotate(-20deg);
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 1.8rem;
+      margin: 15px 0;
+      color: #333;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .announcement-placeholder {
+      margin: 20px 0;
+      border: 2px dashed #000;
+      border-radius: 10px;
+      padding: 10px;
+      background: #c5e8c5;
+    }
+    .announcement-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-between;
+    }
+    .announcement-item {
+      flex: 1 1 calc(50% - 10px);
+      background: #f0d7a7;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: transform 0.2s ease;
+    }
+    .announcement-item:hover {
+      transform: scale(1.02);
+    }
+    .announcement-item h4 {
+      background: #a52a2a;
+      color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 1.3rem;
+      text-align: center;
+    }
+    .announcement-item p {
+      font-size: 1.1rem;
+      color: #333;
+      padding: 5px;
+      background: #fff;
+      border-radius: 5px;
+    }
+    .announcement-item .crud-controls {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    .dar-ul-fatwa {
+      text-align: center;
+      font-size: 1.5rem;
+      margin: 15px 0;
+      color: #000;
+      font-weight: 700;
+    }
+    .teacher-section, .contact-section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f0d7a7;
+      border-radius: 10px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .teacher-section h3, .contact-section h3 {
+      text-align: center;
+      background: #a52a2a;
+      color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    #teacher-list, #contact-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+    }
+    .teacher-item, .contact-item {
+      background: #000;
+      color: #fff;
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      transition: transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+      max-width: 200px;
+    }
+    .teacher-item span, .contact-item span {
+      flex-grow: 1;
+      text-align: center;
+    }
+    .teacher-item:hover, .contact-item:hover {
+      transform: scale(1.05);
+    }
+    .crud-controls {
+      margin: 15px 0;
+      text-align: center;
+    }
+    .crud-controls.global-controls {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+    button, input, textarea {
+      padding: 8px 15px;
+      margin: 5px;
+      font-family: 'Noto Nastaliq Urdu', serif;
+      font-size: 1.1rem;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    input, textarea {
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 8px;
+      width: 100%;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    button {
+      background: #a52a2a;
+      color: #fff;
+    }
+    button:hover {
+      background: #8b1a1a;
+    }
+    .edit-btn, .delete-btn {
+      padding: 5px;
+      font-size: 1rem;
+      background: none;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.3s ease;
+    }
+    .edit-btn:hover, .delete-btn:hover {
+      opacity: 0.7;
+    }
+    .edit-btn::before {
+      content: '✏️';
+    }
+    .delete-btn::before {
+      content: '🗑️';
+    }
+    .add-btn {
+      padding: 5px 10px;
+      font-size: 1rem;
+    }
+    .global-controls button {
+      background: #2e8b57;
+    }
+    .global-controls button:hover {
+      background: #236b43;
+    }
+    @media (max-width: 600px) {
+      #poster-container {
+        max-width: 100%;
+        border-width: 5px;
+      }
+      .title-section {
+        font-size: 1.8rem;
+        padding: 10px;
+      }
+      .title-section::before {
+        font-size: 1rem;
+        top: -15px;
+        left: 10px;
+      }
+      .subtitle, .dar-ul-fatwa {
+        font-size: 1.2rem;
+      }
+      .teacher-section h3, .contact-section h3 {
+        font-size: 1.3rem;
+      }
+      .announcement-item {
+        flex: 1 1 100%;
+      }
+      .teacher-item, .contact-item {
+        max-width: 150px;
+        font-size: 1rem;
+        padding: 8px 15px;
+      }
+    }
+    @media print {
+      .crud-controls, .edit-btn, .delete-btn, .add-btn, input, textarea, .global-controls {
+        display: none !important;
+      }
+      #poster-container {
+        border: none;
+        width: 100%;
+        height: auto;
+        box-shadow: none;
+      }
+      #poster {
+        padding: 10px;
+      }
+      .announcement-item {
+        flex: 1 1 calc(50% - 10px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="poster-container">
+    <div id="poster">
+      <div class="title-section">
+        <span class="title editable" contenteditable="true">دارالعلوم ذکریا</span>
+      </div>
+      <div class="subtitle editable" contenteditable="true">عزی و نرمی سے قرآن پاک سے دروس دی جائیں گے</div>
+      <div class="announcement-placeholder">
+        <div class="announcement-list" id="announcement-list"></div>
+        <div class="crud-controls announcement-crud">
+          <input type="text" id="new-announcement-title" placeholder="اعلان کا عنوان">
+          <textarea id="new-announcement-body" placeholder="اعلان کی تفصیل"></textarea>
+          <button class="add-btn" onclick="addAnnouncement()">شامل کریں</button>
+        </div>
+      </div>
+      <div class="dar-ul-fatwa editable" contenteditable="true">دار لا فتوا</div>
+      <div class="teacher-section">
+        <h3 class="editable" contenteditable="true">مدرسین</h3>
+        <div id="teacher-list"></div>
+        <div class="crud-controls teacher-crud">
+          <input type="text" id="new-teacher" placeholder="نیا مدرس">
+          <button class="add-btn" onclick="addTeacher()">شامل کریں</button>
+        </div>
+      </div>
+      <div class="contact-section">
+        <h3 class="editable" contenteditable="true">رابطہ نمبرز</h3>
+        <div id="contact-list"></div>
+        <div class="crud-controls contact-crud">
+          <input type="text" id="new-contact" placeholder="نیا نمبر">
+          <button class="add-btn" onclick="addContact()">شامل کریں</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="crud-controls global-controls">
+    <button onclick="exportToImage()">تصویر کے طور پر ایکسپورٹ کریں</button>
+    <button onclick="resetToDefault()">ڈیفالٹ پر ری سیٹ کریں</button>
+  </div>
+
+  <script>
+    const defaultData = {
+      title: 'دارالعلوم ذکریا',
+      subtitle: 'عزی و نرمی سے قرآن پاک سے دروس دی جائیں گے',
+      darUlFatwa: 'دار لا فتوا',
+      teachers: ['مفتی جہانگیر', 'مفتی اسرار'],
+      announcements: [
+        { title: 'داخلہ شروع', body: 'اب داخلہ شروع ہو چکا ہے، جلدی رجسٹر کریں!' },
+        { title: 'شام کی کلاسز', body: 'شام کی کلاسز کا وقت تبدیل ہو گیا ہے۔' }
+      ],
+      contacts: ['03360401841', '03319327288']
+    };
+
+    function loadData() {
+      const savedData = localStorage.getItem('posterData');
+      return savedData ? JSON.parse(savedData) : defaultData;
+    }
+
+    function saveData(data) {
+      localStorage.setItem('posterData', JSON.stringify(data));
+    }
+
+    function renderData() {
+      const data = loadData();
+      document.querySelector('.title').textContent = data.title;
+      document.querySelector('.subtitle').textContent = data.subtitle;
+      document.querySelector('.dar-ul-fatwa').textContent = data.darUlFatwa;
+
+      const announcementList = document.getElementById('announcement-list');
+      announcementList.innerHTML = '';
+      data.announcements.forEach((announcement, index) => {
+        const div = document.createElement('div');
+        div.className = 'announcement-item';
+        div.innerHTML = `
+          <h4 class="editable" contenteditable="true">${announcement.title}</h4>
+          <p class="editable" contenteditable="true">${announcement.body}</p>
+          <div class="crud-controls">
+            <button class="edit-btn" onclick="editAnnouncement(${index})"></button>
+            <button class="delete-btn" onclick="deleteAnnouncement(${index})"></button>
+          </div>`;
+        announcementList.appendChild(div);
+      });
+
+      const teacherList = document.getElementById('teacher-list');
+      teacherList.innerHTML = '';
+      data.teachers.forEach((teacher, index) => {
+        const div = document.createElement('div');
+        div.className = 'teacher-item';
+        div.innerHTML = `<span class="editable" contenteditable="true">${teacher}</span>
+          <div>
+            <button class="edit-btn" onclick="editTeacher(${index})"></button>
+            <button class="delete-btn" onclick="deleteTeacher(${index})"></button>
+          </div>`;
+        teacherList.appendChild(div);
+      });
+
+      const contactList = document.getElementById('contact-list');
+      contactList.innerHTML = '';
+      data.contacts.forEach((contact, index) => {
+        const div = document.createElement('div');
+        div.className = 'contact-item';
+        div.innerHTML = `<span class="editable" contenteditable="true">${contact}</span>
+          <div>
+            <button class="edit-btn" onclick="editContact(${index})"></button>
+            <button class="delete-btn" onclick="deleteContact(${index})"></button>
+          </div>`;
+        contactList.appendChild(div);
+      });
+    }
+
+    function addAnnouncement() {
+      const data = loadData();
+      const newTitle = document.getElementById('new-announcement-title').value.trim();
+      const newBody = document.getElementById('new-announcement-body').value.trim();
+      if (newTitle && newBody) {
+        data.announcements.push({ title: newTitle, body: newBody });
+        saveData(data);
+        renderData();
+        document.getElementById('new-announcement-title').value = '';
+        document.getElementById('new-announcement-body').value = '';
+      }
+    }
+
+    function editAnnouncement(index) {
+      const data = loadData();
+      const announcementItems = document.querySelectorAll('.announcement-item');
+      const updatedTitle = announcementItems[index].querySelector('h4').textContent.trim();
+      const updatedBody = announcementItems[index].querySelector('p').textContent.trim();
+      if (updatedTitle && updatedBody) {
+        data.announcements[index] = { title: updatedTitle, body: updatedBody };
+        saveData(data);
+      }
+    }
+
+    function deleteAnnouncement(index) {
+      const data = loadData();
+      data.announcements.splice(index, 1);
+      saveData(data);
+      renderData();
+    }
+
+    function addTeacher() {
+      const data = loadData();
+      const newTeacher = document.getElementById('new-teacher').value.trim();
+      if (newTeacher) {
+        data.teachers.push(newTeacher);
+        saveData(data);
+        renderData();
+        document.getElementById('new-teacher').value = '';
+      }
+    }
+
+    function editTeacher(index) {
+      const data = loadData();
+      const teacherItems = document.querySelectorAll('.teacher-item span');
+      const updatedTeacher = teacherItems[index].textContent.trim();
+      if (updatedTeacher) {
+        data.teachers[index] = updatedTeacher;
+        saveData(data);
+      }
+    }
+
+    function deleteTeacher(index) {
+      const data = loadData();
+      data.teachers.splice(index, 1);
+      saveData(data);
+      renderData();
+    }
+
+    function addContact() {
+      const data = loadData();
+      const newContact = document.getElementById('new-contact').value.trim();
+      if (newContact) {
+        data.contacts.push(newContact);
+        saveData(data);
+        renderData();
+        document.getElementById('new-contact').value = '';
+      }
+    }
+
+    function editContact(index) {
+      const data = loadData();
+      const contactItems = document.querySelectorAll('.contact-item span');
+      const updatedContact = contactItems[index].textContent.trim();
+      if (updatedContact) {
+        data.contacts[index] = updatedContact;
+        saveData(data);
+      }
+    }
+
+    function deleteContact(index) {
+      const data = loadData();
+      data.contacts.splice(index, 1);
+      saveData(data);
+      renderData();
+    }
+
+    document.querySelectorAll('.editable').forEach(element => {
+      element.addEventListener('input', () => {
+        const data = loadData();
+        if (element.classList.contains('title')) data.title = element.textContent.trim();
+        if (element.classList.contains('subtitle')) data.subtitle = element.textContent.trim();
+        if (element.classList.contains('dar-ul-fatwa')) data.darUlFatwa = element.textContent.trim();
+        saveData(data);
+      });
+    });
+
+    function exportToImage() {
+      const poster = document.getElementById('poster');
+      const originalStyles = {
+        controls: [],
+        inputs: [],
+        buttons: []
+      };
+
+      document.querySelectorAll('.crud-controls, .edit-btn, .delete-btn, .add-btn, input, textarea').forEach(el => {
+        originalStyles.controls.push(el.style.display);
+        el.style.display = 'none';
+      });
+
+      html2canvas(poster, {
+        scale: 4,
+        useCORS: true,
+        backgroundColor: null,
+        logging: false,
+        width: poster.offsetWidth,
+        height: poster.offsetHeight,
+        windowWidth: poster.offsetWidth,
+        windowHeight: poster.offsetHeight,
+        dpi: 300
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'urdu-poster.png';
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+
+        document.querySelectorAll('.crud-controls, .edit-btn, .delete-btn, .add-btn, input, textarea').forEach((el, index) => {
+          el.style.display = originalStyles.controls[index] || '';
+        });
+      }).catch(err => {
+        console.error('Export failed:', err);
+        alert('تصویر ایکسپورٹ کرنے میں ناکامی ہوئی۔ براہ کرم دوبارہ کوشش کریں۔');
+      });
+    }
+
+    function resetToDefault() {
+      if (confirm('کیا آپ واقعی ڈیفالٹ پر ری سیٹ کرنا چاہتے ہیں؟')) {
+        localStorage.setItem('posterData', JSON.stringify(defaultData));
+        renderData();
+      }
+    }
+
+    window.onload = () => {
+      renderData();
+      document.querySelectorAll('input, textarea').forEach(input => {
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter' && input.tagName !== 'TEXTAREA') {
+            if (input.id === 'new-teacher') addTeacher();
+            if (input.id === 'new-contact') addContact();
+            if (input.id === 'new-announcement-title') addAnnouncement();
+          }
+        });
+      });
+    };
+  </script>
+</body>
+</html>

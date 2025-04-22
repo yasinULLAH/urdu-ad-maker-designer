@@ -1,0 +1,1081 @@
+
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اسلامی پوسٹر ڈیزائنر</title>
+    <style>
+        @font-face {
+            font-family: 'Noto Nastaliq Urdu';
+            src: url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap');
+        }
+        @font-face {
+            font-family: 'Amiri';
+            src: url('https://fonts.googleapis.com/css2?family=Amiri&display=swap');
+        }
+        :root {
+            --primary-color: #075e54;
+            --secondary-color: #128c7e;
+            --accent-color: #25d366;
+            --text-color: #333;
+            --light-bg: #f5f5f5;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Noto Nastaliq Urdu', 'Amiri', sans-serif;
+            direction: rtl;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .sidebar {
+            flex: 0 0 300px;
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-right: 1rem;
+            margin-bottom: 1rem;
+        }
+        .editor-area {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 600px;
+        }
+        #canvas {
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            position: relative;
+            transform-origin: top left;
+        }
+        .element {
+            position: absolute;
+            cursor: move;
+            border: 1px dashed transparent;
+        }
+        .element.selected {
+            border: 1px dashed #25d366;
+        }
+        .resize-handle {
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            border: 1px solid #25d366;
+            position: absolute;
+            border-radius: 50%;
+        }
+        .rotate-handle {
+            width: 10px;
+            height: 10px;
+            background-color: white;
+            border: 1px solid blue;
+            position: absolute;
+            border-radius: 50%;
+            top: -20px;
+            left: 50%;
+            margin-left: -5px;
+            cursor: grab;
+        }
+        .section {
+            margin-bottom: 1.5rem;
+        }
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 0;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: var(--primary-color);
+        }
+        .action-btn {
+            background-color: var(--accent-color);
+        }
+        select, input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .color-picker {
+            display: flex;
+            align-items: center;
+        }
+        .color-picker input[type="color"] {
+            width: 40px;
+            height: 40px;
+            border: none;
+            padding: 0;
+            background: none;
+        }
+        .color-picker input[type="text"] {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .template-item {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .template-item:hover {
+            background: #f0f0f0;
+        }
+        .toolbar {
+            display: flex;
+            padding: 10px;
+            background: #f9f9f9;
+            border-bottom: 1px solid #ddd;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .tool-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .icon-button {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .icon-button:hover {
+            background: #f0f0f0;
+        }
+        .icon-button.active {
+            background: var(--accent-color);
+            color: white;
+        }
+        .status-bar {
+            padding: 5px 10px;
+            background: #f9f9f9;
+            border-top: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        .tooltip {
+            position: relative;
+        }
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            white-space: nowrap;
+            z-index: 100;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .close-modal {
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            border-bottom: 2px solid var(--accent-color);
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+        }
+        .icon-item {
+            width: 60px;
+            height: 60px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .icon-item:hover {
+            background: #f0f0f0;
+        }
+        .icon-item img {
+            max-width: 40px;
+            max-height: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                flex: none;
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 1rem;
+            }
+            .editor-area {
+                flex: none;
+                width: 100%;
+            }
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #canvas, #canvas * {
+                visibility: visible;
+            }
+            #canvas {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+<h1>اسلامی پوسٹر ڈیزائنر</h1>
+</header>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="section">
+                <h2 class="section-title">ٹیمپلیٹس</h2>
+                <div class="templates-list">
+                    <div class="template-item" data-template="admission">داخلہ پوسٹر</div>
+                    <div class="template-item" data-template="event">تقریب پوسٹر</div>
+                    <div class="template-item" data-template="announcement">اعلان پوسٹر</div>
+                    <div class="template-item" data-template="blank">خالی پوسٹر</div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">عناصر</h2>
+                <button id="add-text" data-tooltip="متن شامل کریں">متن شامل کریں</button>
+                <button id="add-image" data-tooltip="تصویر شامل کریں">تصویر شامل کریں</button>
+                <button id="add-shape" data-tooltip="شکل شامل کریں">شکل شامل کریں</button>
+                <button id="add-icon" data-tooltip="آئیکن شامل کریں">آئیکن شامل کریں</button>
+                <button id="add-qr" data-tooltip="کیو آر کوڈ شامل کریں">کیو آر کوڈ شامل کریں</button>
+            </div>
+            
+            <div class="section" id="element-properties" style="display: none;">
+                <h2 class="section-title">خصوصیات</h2>
+                <div id="text-properties">
+                    <label>متن:</label>
+                    <textarea id="text-content"></textarea>
+                    <label>فونٹ:</label>
+                    <select id="font-family">
+                        <option value="'Noto Nastaliq Urdu'">نستعلیق</option>
+                        <option value="'Amiri'">امیری</option>
+                        <option value="Arial">Arial</option>
+                    </select>
+                    <label>سائز:</label>
+                    <input type="number" id="font-size" min="8" max="120" value="16">
+                    <label>رنگ:</label>
+                    <div class="color-picker">
+                        <input type="text" id="text-color-hex" value="#000000">
+                        <input type="color" id="text-color" value="#000000">
+                    </div>
+                    <div>
+                        <label><input type="checkbox" id="bold"> بولڈ</label>
+                        <label><input type="checkbox" id="italic"> اٹالک</label>
+                    </div>
+                    <label>بیک گراؤنڈ:</label>
+                    <div class="color-picker">
+                        <input type="text" id="bg-color-hex" value="transparent">
+                        <input type="color" id="bg-color" value="#ffffff">
+                    </div>
+                    <label><input type="checkbox" id="bg-transparent"> شفاف</label>
+                </div>
+                
+                <div id="shape-properties" style="display: none;">
+                    <label>شکل:</label>
+                    <select id="shape-type">
+                        <option value="rectangle">مستطیل</option>
+                        <option value="circle">دائرہ</option>
+                        <option value="triangle">مثلث</option>
+                    </select>
+                    <label>لائن کلر:</label>
+                    <div class="color-picker">
+                        <input type="text" id="stroke-color-hex" value="#000000">
+                        <input type="color" id="stroke-color" value="#000000">
+                    </div>
+                    <label>لائن موٹائی:</label>
+                    <input type="number" id="stroke-width" min="0" max="20" value="1">
+                    <label>بھرائی کا رنگ:</label>
+                    <div class="color-picker">
+                        <input type="text" id="fill-color-hex" value="transparent">
+                        <input type="color" id="fill-color" value="#ffffff">
+                    </div>
+                    <label><input type="checkbox" id="fill-transparent"> شفاف</label>
+                </div>
+                
+                <div id="image-properties" style="display: none;">
+                    <label>تصویر برائے:</label>
+                    <button id="replace-image">تصویر تبدیل کریں</button>
+                    <label>شفافیت:</label>
+                    <input type="range" id="image-opacity" min="0" max="1" step="0.1" value="1">
+                </div>
+                
+                <div id="common-properties">
+                    <label>پوزیشن:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <div>
+                            <label>X:</label>
+                            <input type="number" id="pos-x" style="width: 60px;">
+                        </div>
+                        <div>
+                            <label>Y:</label>
+                            <input type="number" id="pos-y" style="width: 60px;">
+                        </div>
+                    </div>
+                    <label>سائز:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <div>
+                            <label>W:</label>
+                            <input type="number" id="element-width" style="width: 60px;">
+                        </div>
+                        <div>
+                            <label>H:</label>
+                            <input type="number" id="element-height" style="width: 60px;">
+                        </div>
+                    </div>
+                    <label>گھمائیں:</label>
+                    <input type="range" id="rotation" min="0" max="360" value="0">
+                    <span id="rotation-value">0°</span>
+                    
+                    <div>
+                        <button id="bring-forward" data-tooltip="سامنے لائیں">سامنے لائیں</button>
+                        <button id="send-backward" data-tooltip="پیچھے بھیجیں">پیچھے بھیجیں</button>
+                    </div>
+                    <div>
+                        <button id="delete-element" class="action-btn" data-tooltip="حذف کریں">حذف کریں</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">پیج سیٹنگز</h2>
+                <label>سائز:</label>
+                <select id="page-size">
+                    <option value="a4-portrait">A4 پورٹریٹ</option>
+                    <option value="a4-landscape">A4 لینڈسکیپ</option>
+                    <option value="a3-portrait">A3 پورٹریٹ</option>
+                    <option value="a3-landscape">A3 لینڈسکیپ</option>
+                    <option value="custom">کسٹم</option>
+                </select>
+                <div id="custom-size" style="display: none;">
+                    <div style="display: flex; gap: 10px;">
+                        <div>
+                            <label>چوڑائی (px):</label>
+                            <input type="number" id="canvas-width" style="width: 60px;">
+                        </div>
+                        <div>
+                            <label>اونچائی (px):</label>
+                            <input type="number" id="canvas-height" style="width: 60px;">
+                        </div>
+                    </div>
+                </div>
+                <label>بیک گراؤنڈ رنگ:</label>
+                <div class="color-picker">
+                    <input type="text" id="canvas-bg-hex" value="#ffffff">
+                    <input type="color" id="canvas-bg" value="#ffffff">
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="section-title">ڈیزائن ایکشنز</h2>
+                <button id="save-design" class="action-btn">ڈیزائن محفوظ کریں</button>
+                <button id="load-design">ڈیزائن لوڈ کریں</button>
+                <button id="export-png" class="action-btn">PNG ایکسپورٹ کریں</button>
+                <button id="export-jpg">JPG ایکسپورٹ کریں</button>
+                <button id="print-design">پرنٹ کریں</button>
+                <button id="share-whatsapp">واٹس ایپ پر شیئر کریں</button>
+            </div>
+        </div>
+        
+        <div class="editor-area">
+            <div class="toolbar">
+                <div class="tool-group">
+                    <button id="undo" class="icon-button" data-tooltip="واپس">↩️</button>
+                    <button id="redo" class="icon-button" data-tooltip="آگے">↪️</button>
+                </div>
+                <div class="tool-group">
+                    <button id="select-tool" class="icon-button active" data-tooltip="سلیکٹ">👆</button>
+                    <button id="pan-tool" class="icon-button" data-tooltip="پین">✋</button>
+                </div>
+                <div class="tool-group">
+                    <button id="zoom-in" class="icon-button" data-tooltip="زوم ان">🔍+</button>
+                    <button id="zoom-out" class="icon-button" data-tooltip="زوم آؤٹ">🔍-</button>
+                    <button id="zoom-reset" class="icon-button" data-tooltip="زوم ری سیٹ">🔍1:1</button>
+                </div>
+            </div>
+            
+            <div class="canvas-container" id="canvas-container">
+                <div id="canvas"></div>
+            </div>
+            
+            <div class="status-bar">
+                <div id="object-count">عناصر: 0</div>
+                <div id="zoom-level">زوم: 100%</div>
+                <div id="canvas-size">سائز: 0 x 0</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="icons-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>آئیکن منتخب کریں</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="tabs">
+                <div class="tab active" data-tab="islamic-icons">اسلامی آئیکنز</div>
+                <div class="tab" data-tab="other-icons">دیگر آئیکنز</div>
+            </div>
+            <div class="tab-content active" id="islamic-icons">
+                <div class="icon-grid">
+                    <!-- Islamic icons will be added here -->
+                    <div class="icon-item"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0xMiAyLjVMMTQuMjUgOWgzLjI1bC0yLjc1IDIuMjVMMTYgMTYuNUwxMiAxNGwtNCA0LjVlMi0yLjI1TDUuNSA5aDMuMjVMMTIgMi41TTE1IDkuNzVIOVY4Ljc1aDF2LTJoMXYyaDF2MWgtLjc1djNoMS41VjlMMyA3LjVoNmMwLTIuNzYtMi4yNS01LTUtNVYxLjVjMy41OCAwIDYuNTUgMi43NSA2Ljk1IDYuMjVoNS4xYy40LTMuNSAzLjM3LTYuMjUgNi45NS02LjI1VjIuNWMtMi43NSAwLTUgMi4yNC01IDVoNkwyMyA5LjVsLTYgNi41bC00LTQuNWgtMXY0LjVIOVYxM0g4djVINnYtOS4yNUg1LjVjMCAzLjA0IDIuNSA1LjUgNS41IDUuNXYxLjVjLTMuOCAwLTYuOTMtMy02Ljk3LTYuNzVIMTUiLz48L3N2Zz4=" alt="Mosque"></div>
+                    <div class="icon-item"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0xMiAyYTEwIDEwIDAgMCAxIDEwIDEwYTEwIDEwIDAgMCAxLTEwIDEwQTEwIDEwIDAgMCAxIDIgMTJBMTAgMTAgMCAwIDEgMTIgMm0wIDJjLTQuNDEgMC04IDMuNTktOCA4czMuNTkgOCA4IDhzOC0zLjU5IDgtOHMtMy41OS04LTgtOG0xIDJoMnYyaC0yVjZtMCA0aDJ2NmgtMnYtNk05IDhoNnYySDlWOFoiLz48L3N2Zz4=" alt="Crescent"></div>
+                    <div class="icon-item"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik04LjI4NiAzLjIwN2MtMS4xNDcuNDI3LTIuMjk0IDEuMjgtMy4wMSAyLjU2Yy0uODU0IDEuNjA3LS44NTQgMy40MTMgMCA1LjAyYy44NTQgMS42MDcgMi4wMDcgMi4xMzQgMy40NCAyLjU2Yy0uNDI2LS40MjctLjg1NC0uODU0LTEuMjgtMS43MDdjLS42NC0xLjI4LS42NC0yLjk4NyAwLTQuMjY3Yy40MjYtLjg1NCAxLjA2Ny0xLjcwNyAyLjEzNC0yLjEzM2MuODU0LS40MjcgMS43MDctLjQyNyAyLjU2LS40MjdjMi4xMzQgMCA0LjA1NC44NTQgNS43NiAyLjEzNGMxLjcwNyAxLjI4IDMuMDEzIDMuMiAzLjQ0IDUuMzM0Yy40MjYgMi4zNDYgMCA0LjQ4LTEuMjggNi40YTcuODI2IDcuODI2IDAgMCAxLTEuNzA3IDEuNzA3aC0yLjk4NmMuNDI2LS40MjcgMS4yOC0uODU0IDEuNzA2LTEuNzA3Yy44NTQtMS4yOCAxLjI4LTIuNTYgMS4wNjctMy44NGMtLjIxMy0xLjI4LS44NTMtMi41Ni0xLjkyLTMuNDEzYy0xLjA2Ny0xLjA2Ny0yLjM0Ny0xLjcwNy0zLjg0LTIuMTM0Yy0uNDI3LS4yMTMtLjg1NC0uMjEzLTEuMjgtLjQyNmMtLjIxNC0uMjE0LS4yMTQtLjQyNy0uMjE0LS42NGMwLS40MjcuMjE0LS44NTQuNjQtMWMuNDI3LS4yMTMuODU0LS4yMTMgMS4yOC0uMjEzYy4yMTQgMCAuNjQuMjEzLjY0LjQyNmMuMjE0LjIxNC4yMTQuNDI3LjIxNC42NGg0LjI2N2MwLTEuMjgtLjY0LTIuNTYtMS43MDctMy4yMjdjLS44NTMtLjY0LTIuMTMzLTEuMDY3LTMuMjEzLTEuMDY3aC0uNDI3Yy0uODUzIDAtMS43MDcuMjE0LTIuMzQ2LjY0Yy0uNjQuNDI3LTEuMjguODU0LTEuNzA3IDEuNDk0Yy0uNDI2LjY0LS42NCAxLjI4LS42NCAyLjEzM2MwIC44NTQuMTg3IDEuNTQ3LjU0IDIuMjJ2LjAwN2MuNDI3LjY0Ljg1NCAxLjI4IDEuNzA3IDEuNzA3Yy44NTMuNDI3IDEuNzA3LjY0IDIuNTYuNjRoLjQyN3YzLjg0aC0xLjA2N3YtMi41NmMtMS4yOCAwLTIuNTYtLjQyNy0zLjYyNy0xLjI4Yy0xLjA2Ny0uODU0LTEuNzA3LTEuOTItMi4xMzMtMy4yMTRjLS4yMTMtLjg1My0uMjEzLTEuNzA2IDAtMi41NmMuMjEzLS44NTMuNjQtMS43MDYgMS4yOC0yLjM0NmMuNjQtLjY0IDEuMjgtMS4wNjcgMi4xMzMtMS4yOGMuODU0LS4yMTQgMS43MDctLjIxNCAyLjU2IDBjLS40MjYuNjQtLjY0IDEuMjgtLjY0IDEuOTJzLjIxNCAxLjQ5My43NDcgMi4xMzNtNS41NDYgMTAuODU0aDIuMTM0YzAtLjQyNyAwLS44NTQtLjIxMy0xLjI4Yy0uMjE0LS40MjctLjY0LS44NTQtMS4wNjctMS4wNjctLjQyNy0uMjEzLS44NTQtLjQyNy0xLjI4LS40MjdoLTQuMjY3Yy0uNDI3IDAtLjg1NC4yMTQtMS4yOC40MjdjLS40MjcuMjEzLS44NTQuNjQtMS4wNjcgMS4wNjdjLS4yMTQuNDI2LS4yMTQuODUzLS4yMTQgMS4yOGgyLjEzNGMwLS40MjcuMjEzLS42NC42NC0uNjRoMy44NGMuNDI2IDAgLjY0LjIxMy42NC42NCIvPjwvc3ZnPg==" alt="Kaaba"></div>
+                    <div class="icon-item"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0xMiAyYTEgMSAwIDAgMSAxIDF2MmEyIDIgMCAwIDEgMiAyaDJhMSAxIDAgMCAxIDAgMmgtNnY0aDJhMSAxIDAgMCAxIDAgMmgtMnY2YTEgMSAwIDAgMS0yIDB2LTZIOWExIDEgMCAwIDEgMC0yaDJWOUg1YTEgMSAwIDAgMSAwLTJoMmEyIDIgMCAwIDEgMi0yVjNhMSAxIDAgMCAxIDEtMW0zIDVoLTZ2MGEyIDIgMCAwIDEtMi0yaDE0YTIgMiAwIDAgMS0yIDJIMTVaIi8+PC9zdmc+" alt="Prayer"></div>
+                </div>
+            </div>
+            <div class="tab-content" id="other-icons">
+                <div class="icon-grid">
+                    <!-- Other icons will be added here -->
+                    <div class="icon-item"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0yMCA4aC0zVjZjMC0xLjExLS44OS0yLTItMkgzYy0xLjExIDAtMiAuODktMiAydjEyYzAgMS4xLjg5IDIgMiAyaDNjMCAxLjEuOSAyIDIgMmgxMGMxLjEgMCAyLS45IDItMmgyYzEuMSAwIDItLjkgMi0ydi04YzAtMS4xLS45LTItMi0ybS0xNyA0SDN2NmgzdjFhMSAxIDAgMCAxLTEgMVY5YTEgMSAwIDAgMSAxIDF2MnptMTUgN2gtMlYxN2MwLTEuMS0uOS0yLTItMkg4di0yaDhjMS4xIDAgMi0uOSAyLTJWOWgydjEweiIvPjwvc3ZnPg==" alt="Book"></div>
+                    <div class="icon-item"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik03LjUgNUE0LjUgNC41IDAgMCAwIDMgOS41QTQuNSA0LjUgMCAwIDAgNy41IDE0QTQuNSA0LjUgMCAwIDAgMTIgOS41QTQuNSA0LjUgMCAwIDAgNy41IDVtMCAxYTEgMSAwIDAgMSAxIDFhMSAxIDAgMCAxLTEgMWExIDEgMCAwIDEtMS0xYTEgMSAwIDAgMSAxLTFtLTMgNC41YTEgMSAwIDAgMSAxLTFoNGExIDEgMCAwIDEgMSAxdjNIMTJhMyAzIDAgMCAxLTMgM2ExIDEgMCAwIDEtMS0xdi0xSDVhMSAxIDAgMCAxLTEtMXYtM20xMS41LTEuNWE0LjUgNC41IDAgMCAwLTQuNSA0LjVjMCAzLjgyIDQuNSA1LjUgNC41IDUuNXM0LjUtMS42OCA0LjUtNS41YTQuNSA0LjUgMCAwIDAtNC41LTQuNU0xNiA5YTEgMSAwIDAgMSAxIDFhMSAxIDAgMCAxLTEgMWExIDEgMCAwIDEtMS0xYTEgMSAwIDAgMSAxLTFtLTMgNC41YTEgMSAwIDAgMSAxLTFoNGExIDEgMCAwIDEgMSAxdjNoLTIuNWEzIDMgMCAwIDEtMyAzYTEgMSAwIDAgMS0xLTF2LTFIMTNhMSAxIDAgMCAxLTEtMXYtM1oiLz48L3N2Zz4=" alt="Education"></div>
+                    <div class="icon-item"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0xMiAzTDEgOWwxMSA2bDkuOTktNS40M1YxNmguMDFWOS40NUwxMiAzbTYuOTMgNkwxMiA1LjUyTDUuMDcgOUwxMiAxMi40OGw2LjkzLTMuNDhNNSAxM3Y0YzAgMS4xLjkgMiAyIDJoMTBjMS4xIDAgMi0uOSAyLTJ2LTRsLTcgMy44N0w1IDEzeiIvPjwvc3ZnPg==" alt="Graduate"></div>
+                    <div class="icon-item"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDI0IDI0Ij48cGF0aCBmaWxsPSJjdXJyZW50Q29sb3IiIGQ9Ik0xOSA0aDNsLTQgNGwtNC00aDNsLTMuMTIuNGEyIDIgMCAwIDAtMS40IDEuMTRMMTEgOWg5bTAgMkgyLjM5YTIgMiAwIDAgMC0xLjU0Ljc2QTIgMiAwIDAgMCAuOCAxMy42NEw0LjkxIDIwYTIgMiAwIDAgMCAxLjU0Ljc2YTIgMiAwIDAgMCAxLjM0LS41MkwxMSAxOGgxLjA2TDguMTcgMTAuODlsMy44Ni0xLjFMMTMuNDggMTNIMjB2LTJ6Ii8+PC9zdmc+" alt="Announcement"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="qr-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>کیو آر کوڈ بنائیں</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div>
+                <label>ٹیکسٹ یا URL:</label>
+                <input type="text" id="qr-text" placeholder="یہاں ٹیکسٹ یا URL درج کریں">
+                
+                <label>سائز:</label>
+                <input type="number" id="qr-size" min="100" max="500" value="200">
+                
+                <div>
+                    <button id="generate-qr" class="action-btn">کیو آر کوڈ بنائیں</button>
+                </div>
+                
+                <div id="qr-preview" style="margin-top: 20px; text-align: center;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let canvas;
+        let elements = [];
+        let selectedElement = null;
+        let isDragging = false;
+        let isResizing = false;
+        let isRotating = false;
+        let offsetX, offsetY;
+        let startX, startY;
+        let resizeHandle = '';
+        let zoomLevel = 1;
+        let isPanning = false;
+        let history = [];
+        let historyIndex = -1;
+        let currentTool = 'select';
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            initCanvas();
+            setupEventListeners();
+            setupToolbar();
+            loadIslamicIcons();
+            loadOtherIcons();
+        });
+        
+        // Initialize the canvas
+        function initCanvas() {
+            canvas = document.getElementById('canvas');
+            setCanvasSize('a4-portrait');
+            updateStatusBar();
+        }
+        
+        // Set canvas size based on page size
+        function setCanvasSize(size) {
+            let width, height;
+            
+            switch(size) {
+                case 'a4-portrait':
+                    width = 595;
+                    height = 842;
+                    break;
+                case 'a4-landscape':
+                    width = 842;
+                    height = 595;
+                    break;
+                case 'a3-portrait':
+                    width = 842;
+                    height = 1191;
+                    break;
+                case 'a3-landscape':
+                    width = 1191;
+                    height = 842;
+                    break;
+                case 'custom':
+                    width = parseInt(document.getElementById('canvas-width').value) || 600;
+                    height = parseInt(document.getElementById('canvas-height').value) || 800;
+                    break;
+                default:
+                    width = 595;
+                    height = 842;
+            }
+            
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            canvas.setAttribute('data-width', width);
+            canvas.setAttribute('data-height', height);
+            
+            updateStatusBar();
+            centerCanvas();
+        }
+        
+        // Center the canvas in the container
+        function centerCanvas() {
+            const container = document.getElementById('canvas-container');
+            const canvasWidth = parseInt(canvas.getAttribute('data-width'));
+            const canvasHeight = parseInt(canvas.getAttribute('data-height'));
+            
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            
+            const scaleX = containerWidth / canvasWidth;
+            const scaleY = containerHeight / canvasHeight;
+            
+            // Use the smaller scale to ensure the canvas fits
+            const scale = Math.min(scaleX, scaleY, 1) * zoomLevel;
+            
+            canvas.style.transform = `scale(${scale})`;
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Add element buttons
+            document.getElementById('add-text').addEventListener('click', addTextElement);
+            document.getElementById('add-image').addEventListener('click', addImageElement);
+            document.getElementById('add-shape').addEventListener('click', addShapeElement);
+            document.getElementById('add-icon').addEventListener('click', openIconsModal);
+            document.getElementById('add-qr').addEventListener('click', openQrModal);
+            
+            // Canvas size selection
+            document.getElementById('page-size').addEventListener('change', function(e) {
+                if (e.target.value === 'custom') {
+                    document.getElementById('custom-size').style.display = 'block';
+                } else {
+                    document.getElementById('custom-size').style.display = 'none';
+                    setCanvasSize(e.target.value);
+                }
+            });
+            
+            // Custom size inputs
+            document.getElementById('canvas-width').addEventListener('change', function() {
+                setCanvasSize('custom');
+            });
+            document.getElementById('canvas-height').addEventListener('change', function() {
+                setCanvasSize('custom');
+            });
+            
+            // Canvas background color
+            document.getElementById('canvas-bg').addEventListener('input', function(e) {
+                const color = e.target.value;
+                document.getElementById('canvas-bg-hex').value = color;
+                canvas.style.backgroundColor = color;
+            });
+            
+            document.getElementById('canvas-bg-hex').addEventListener('input', function(e) {
+                const color = e.target.value;
+                document.getElementById('canvas-bg').value = color;
+                canvas.style.backgroundColor = color;
+            });
+            
+            // Element properties events
+            document.getElementById('text-content').addEventListener('input', updateSelectedElement);
+            document.getElementById('font-family').addEventListener('change', updateSelectedElement);
+            document.getElementById('font-size').addEventListener('input', updateSelectedElement);
+            document.getElementById('text-color').addEventListener('input', updateTextColor);
+            document.getElementById('text-color-hex').addEventListener('input', updateTextColorHex);
+            document.getElementById('bold').addEventListener('change', updateSelectedElement);
+            document.getElementById('italic').addEventListener('change', updateSelectedElement);
+            document.getElementById('bg-color').addEventListener('input', updateBgColor);
+            document.getElementById('bg-color-hex').addEventListener('input', updateBgColorHex);
+            document.getElementById('bg-transparent').addEventListener('change', toggleBgTransparent);
+            
+            document.getElementById('shape-type').addEventListener('change', updateSelectedElement);
+            document.getElementById('stroke-color').addEventListener('input', updateStrokeColor);
+            document.getElementById('stroke-color-hex').addEventListener('input', updateStrokeColorHex);
+            document.getElementById('stroke-width').addEventListener('input', updateSelectedElement);
+            document.getElementById('fill-color').addEventListener('input', updateFillColor);
+            document.getElementById('fill-color-hex').addEventListener('input', updateFillColorHex);
+            document.getElementById('fill-transparent').addEventListener('change', toggleFillTransparent);
+            
+            document.getElementById('image-opacity').addEventListener('input', updateSelectedElement);
+            document.getElementById('replace-image').addEventListener('click', replaceImage);
+            
+            document.getElementById('pos-x').addEventListener('input', updateElementPosition);
+            document.getElementById('pos-y').addEventListener('input', updateElementPosition);
+            document.getElementById('element-width').addEventListener('input', updateElementSize);
+            document.getElementById('element-height').addEventListener('input', updateElementSize);
+            document.getElementById('rotation').addEventListener('input', updateElementRotation);
+            
+            document.getElementById('bring-forward').addEventListener('click', bringForward);
+            document.getElementById('send-backward').addEventListener('click', sendBackward);
+            document.getElementById('delete-element').addEventListener('click', deleteSelectedElement);
+            
+            // Export buttons
+            document.getElementById('export-png').addEventListener('click', exportAsPNG);
+            document.getElementById('export-jpg').addEventListener('click', exportAsJPG);
+            document.getElementById('print-design').addEventListener('click', printDesign);
+            document.getElementById('save-design').addEventListener('click', saveDesign);
+            document.getElementById('load-design').addEventListener('click', loadDesign);
+            document.getElementById('share-whatsapp').addEventListener('click', shareOnWhatsApp);
+            
+            // Template selection
+            document.querySelectorAll('.template-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    loadTemplate(this.getAttribute('data-template'));
+                });
+            });
+            
+            // Modal close buttons
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.modal').style.display = 'none';
+                });
+            });
+            
+            // Tabs in modals
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // QR code generation
+            document.getElementById('generate-qr').addEventListener('click', generateQRCode);
+            
+            // Canvas events for drag, resize, select
+            canvas.addEventListener('mousedown', handleCanvasMouseDown);
+            document.addEventListener('mousemove', handleDocumentMouseMove);
+            document.addEventListener('mouseup', handleDocumentMouseUp);
+            
+            // Window resize event
+            window.addEventListener('resize', centerCanvas);
+        }
+        
+        // Set up toolbar functionality
+        function setupToolbar() {
+            // Undo/Redo
+            document.getElementById('undo').addEventListener('click', undo);
+            document.getElementById('redo').addEventListener('click', redo);
+            
+            // Tools
+            document.getElementById('select-tool').addEventListener('click', function() {
+                setActiveTool('select');
+            });
+            document.getElementById('pan-tool').addEventListener('click', function() {
+                setActiveTool('pan');
+            });
+            
+            // Zoom controls
+            document.getElementById('zoom-in').addEventListener('click', zoomIn);
+            document.getElementById('zoom-out').addEventListener('click', zoomOut);
+            document.getElementById('zoom-reset').addEventListener('click', zoomReset);
+        }
+        
+        // Set active tool
+        function setActiveTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.icon-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tool + '-tool').classList.add('active');
+            
+            if (tool === 'pan') {
+                document.getElementById('canvas-container').style.cursor = 'grab';
+            } else {
+                document.getElementById('canvas-container').style.cursor = 'default';
+            }
+        }
+        
+        // Handle mouse down on canvas
+        function handleCanvasMouseDown(e) {
+            if (currentTool === 'pan') {
+                isPanning = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                document.getElementById('canvas-container').style.cursor = 'grabbing';
+                return;
+            }
+            
+            // Get position relative to canvas
+            const rect = canvas.getBoundingClientRect();
+            const scale = 1 / zoomLevel;
+            const x = (e.clientX - rect.left) * scale;
+            const y = (e.clientY - rect.top) * scale;
+            
+            // Check if clicking on an element
+            let clickedOnElement = false;
+            
+            // Check from top to bottom (reverse order to select the top-most element)
+            for (let i = elements.length - 1; i >= 0; i--) {
+                const el = elements[i];
+                const elRect = {
+                    left: el.x,
+                    top: el.y,
+                    width: el.width,
+                    height: el.height
+                };
+                
+                // Check if click is inside element
+                if (x >= elRect.left && x <= elRect.left + elRect.width &&
+                    y >= elRect.top && y <= elRect.top + elRect.height) {
+                    
+                    // Select the element
+                    selectElement(el);
+                    clickedOnElement = true;
+                    
+                    // Check if clicking on resize handle
+                    const handles = document.querySelectorAll('.resize-handle');
+                    let clickedHandle = false;
+                    
+                    handles.forEach(handle => {
+                        const handleRect = handle.getBoundingClientRect();
+                        if (e.clientX >= handleRect.left && e.clientX <= handleRect.left + handleRect.width &&
+                            e.clientY >= handleRect.top && e.clientY <= handleRect.top + handleRect.height) {
+                            isResizing = true;
+                            resizeHandle = handle.getAttribute('data-direction');
+                            clickedHandle = true;
+                        }
+                    });
+                    
+                    // Check if clicking on rotate handle
+                    const rotateHandle = document.querySelector('.rotate-handle');
+                    if (rotateHandle) {
+                        const rotateRect = rotateHandle.getBoundingClientRect();
+                        if (e.clientX >= rotateRect.left && e.clientX <= rotateRect.left + rotateRect.width &&
+                            e.clientY >= rotateRect.top && e.clientY <= rotateRect.top + rotateRect.height) {
+                            isRotating = true;
+                            clickedHandle = true;
+                        }
+                    }
+                    
+                    // If not clicking on a handle, start dragging
+                    if (!clickedHandle) {
+                        isDragging = true;
+                        offsetX = x - el.x;
+                        offsetY = y - el.y;
+                    }
+                    
+                    // Stop checking more elements
+                    break;
+                }
+            }
+            
+            // If didn't click on any element, deselect current element
+            if (!clickedOnElement) {
+                deselectElement();
+            }
+        }
+        
+        // Handle mouse move
+        function handleDocumentMouseMove(e) {
+            if (isPanning) {
+                const container = document.getElementById('canvas-container');
+                container.scrollLeft += startX - e.clientX;
+                container.scrollTop += startY - e.clientY;
+                startX = e.clientX;
+                startY = e.clientY;
+                return;
+            }
+            
+            if (!selectedElement) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const scale = 1 / zoomLevel;
+            const x = (e.clientX - rect.left) * scale;
+            const y = (e.clientY - rect.top) * scale;
+            
+            if (isDragging) {
+                selectedElement.x = x - offsetX;
+                selectedElement.y = y - offsetY;
+                
+                // Update element
+                updateElement(selectedElement);
+                
+                // Update position fields
+                document.getElementById('pos-x').value = Math.round(selectedElement.x);
+                document.getElementById('pos-y').value = Math.round(selectedElement.y);
+            } else if (isResizing) {
+                const centerX = selectedElement.x + selectedElement.width / 2;
+                const centerY = selectedElement.y + selectedElement.height / 2;
+                const ratio = selectedElement.width / selectedElement.height;
+                
+                switch (resizeHandle) {
+                    case 'top-left':
+                        selectedElement.width = selectedElement.x + selectedElement.width - x;
+                        selectedElement.height = selectedElement.y + selectedElement.height - y;
+                        selectedElement.x = x;
+                        selectedElement.y = y;
+                        break;
+                    case 'top-right':
+                        selectedElement.width = x - selectedElement.x;
+                        selectedElement.height = selectedElement.y + selectedElement.height - y;
+                        selectedElement.y = y;
+                        break;
+                    case 'bottom-left':
+                        selectedElement.width = selectedElement.x + selectedElement.width - x;
+                        selectedElement.height = y - selectedElement.y;
+                        selectedElement.x = x;
+                        break;
+                    case 'bottom-right':
+                        selectedElement.width = x - selectedElement.x;
+                        selectedElement.height = y - selectedElement.y;
+                        break;
+                    case 'top':
+                        selectedElement.height = selectedElement.y + selectedElement.height - y;
+                        selectedElement.y = y;
+                        break;
+                    case 'right':
+                        selectedElement.width = x - selectedElement.x;
+                        break;
+                    case 'bottom':
+                        selectedElement.height = y - selectedElement.y;
+                        break;
+                    case 'left':
+                        selectedElement.width = selectedElement.x + selectedElement.width - x;
+                        selectedElement.x = x;
+                        break;
+                }
+                
+                // Enforce minimum size
+                selectedElement.width = Math.max(selectedElement.width, 20);
+                selectedElement.height = Math.max(selectedElement.height, 20);
+                
+                // Update element
+                updateElement(selectedElement);
+                
+                // Update size fields
+                document.getElementById('element-width').value = Math.round(selectedElement.width);
+                document.getElementById('element-height').value = Math.round(selectedElement.height);
+            } else if (isRotating) {
+                const centerX = selectedElement.x + selectedElement.width / 2;
+                const centerY = selectedElement.y + selectedElement.height / 2;
+                
+                // Calculate angle between center and mouse position
+                const angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI) + 90;
+                
+                // Round to nearest 15 degrees if holding shift
+                selectedElement.rotation = angle;
+                
+                // Update element
+                updateElement(selectedElement);
+                
+                // Update rotation field
+                document.getElementById('rotation').value = Math.round(selectedElement.rotation);
+                document.getElementById('rotation-value').textContent = Math.round(selectedElement.rotation) + '°';
+            }
+        }
+        
+        // Handle mouse up
+        function handleDocumentMouseUp() {
+            if (isPanning) {
+                isPanning = false;
+                document.getElementById('canvas-container').style.cursor = 'grab';
+                return;
+            }
+            
+            if (isDragging || isResizing || isRotating) {
+                saveToHistory();
+            }
+            
+            isDragging = false;
+            isResizing = false;
+            isRotating = false;
+        }
+        
+        // Select an element
+        function selectElement(element) {
+            deselectElement();
+            selectedElement = element;
+            
+            // Update properties panel
+            showElementProperties(element);
+            
+            // Add selection styling
+            const domElement = document.getElementById(element.id);
+            domElement.classList.add('selected');
+            
+            // Add resize handles
+            addResizeHandles(domElement);
+        }
+        
+        // Deselect current element
+        function deselectElement() {
+            if (selectedElement) {
+                const domElement = document.getElementById(selectedElement.id);
+                if (domElement) {
+                    domElement.classList.remove('selected');
+                    
+                    // Remove resize handles
+                    const handles = document.querySelectorAll('.resize-handle, .rotate-handle');
+                    handles.forEach(handle => handle.remove());
+                }
+                selectedElement = null;
+                
+                // Hide properties panel
+                document.getElementById('element-properties').style.display = 'none';
+            }
+        }
+        
+        // Add resize handles to selected element
+        function addResizeHandles(element) {
+            const positions = [
+                'top-left', 'top', 'top-right',
+                'left', 'right',
+                'bottom-left', 'bottom', 'bottom-right'
+            ];
+            
+            positions.forEach(pos => {
+                const handle = document.createElement('div');
+                handle.className = 'resize-handle';
+                handle.setAttribute('data-direction', pos);
+                
+                // Position the handle
+                switch (pos) {
+                    case 'top-left':
+                        handle.style.top = '-5px';
+                        handle.style.left = '-5px';
+                        handle.style.cursor = 'nwse-resize';
+                        break;
+                    case 'top':
+                        handle.style.top = '-5px';
+                        handle.style.left = '50%';
+                        handle.style.marginLeft = '-5px';
+                        handle.style.cursor = 'ns-resize';
+                        break;
+                    case 'top-right':
+                        handle.style.top = '-5px';
+                        handle.style.right = '-5px';
+                        handle.style

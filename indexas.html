@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>مدرسہ داخلہ اشتہار</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@700&display=swap');
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #e7ffd6, #c1ffc1 80%);
+      font-family: 'Noto Nastaliq Urdu', Tahoma, serif;
+      direction: rtl;
+    }
+    .ad-container {
+      max-width: 650px;
+      margin: 30px auto;
+      border: 3px solid #4a8a18;
+      border-radius: 24px;
+      background: #fdffe9;
+      box-shadow: 0 8px 32px #b7e49d;
+      padding: 28px 18px 18px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+    .ad-header {
+      background: #ffe260;
+      border-radius: 18px 18px 48px 48px/40px 40px 90px 90px;
+      border: 2px solid #d8be59;
+      color: #2c2b1e;
+      text-align: center;
+      font-size: 2.6em;
+      font-family: 'Noto Nastaliq Urdu', serif;
+      font-weight: bold;
+      margin: 0 0 14px 0;
+      padding: 10px 0 24px 0;
+      position: relative;
+    }
+    .ad-badge {
+      position: absolute;
+      top: 8px;
+      left: 20px;
+      background: #1a4b11;
+      color: #fff;
+      padding: 3px 15px;
+      border-radius: 12px 6px 12px 6px;
+      font-size: 1.1em;
+      font-weight: bold;
+      box-shadow: 0 0 8px #c0c0c0;
+      border: 2px solid #fff;
+      font-family: inherit;
+    }
+    .ad-subtitle {
+      text-align: center;
+      font-size: 1.5em;
+      color: #388c1a;
+      font-weight: bold;
+      margin-top: -15px;
+      margin-bottom: 6px;
+    }
+    .ad-location {
+      text-align: center;
+      font-size: 1.2em;
+      color: #444;
+      margin-bottom: 22px;
+    }
+    .ad-arch {
+      width: 100%;
+      min-height: 110px;
+      background: linear-gradient(180deg, #b5fd8f 60%, #eaffc1 100%);
+      border-radius: 68px 68px 0 0/170px 170px 0 0;
+      border: 2px solid #9ed45c;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 2px 8px #c3e5a3 inset;
+    }
+    .ad-arch-text {
+      font-size: 1.4em;
+      color: #205530;
+      font-weight: bold;
+      padding-bottom: 18px;
+      font-family: 'Noto Nastaliq Urdu', serif;
+      text-shadow: 0 1px 0 #ecffe1;
+    }
+    .ad-section-title {
+      background: #8d2222;
+      color: #fff;
+      font-size: 1.5em;
+      font-weight: bold;
+      border-radius: 18px;
+      padding: 6px 40px;
+      width: fit-content;
+      margin: 18px auto 12px auto;
+      box-shadow: 0 2px 6px #a26d6d;
+    }
+    .ad-teachers-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px 16px;
+      margin-bottom: 8px;
+    }
+    .ad-teacher {
+      background: #222;
+      color: #fff9c1;
+      border-radius: 12px;
+      padding: 6px 15px;
+      font-size: 1.1em;
+      font-family: inherit;
+      margin-bottom: 5px;
+      border: 1.5px solid #ffe260;
+      min-width: 100px;
+      text-align: center;
+    }
+    .ad-footer {
+      background: #1f2e5b;
+      color: #fff;
+      padding: 9px 10px 6px 0;
+      border-radius: 0 0 16px 16px;
+      font-size: 1.1em;
+      font-family: inherit;
+      margin-top: 23px;
+      text-align: right;
+      box-shadow: 0 1px 6px #8c8c8c;
+    }
+    .ad-contacts {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      gap: 0 20px;
+      font-size: 1.1em;
+      color: #206a26;
+      font-family: inherit;
+      margin-top: 8px;
+      margin-bottom: 0;
+      padding: 0 5px;
+    }
+    @media (max-width: 500px) {
+      .ad-header { font-size: 1.5em; }
+      .ad-badge { font-size: 1em; left: 7px;}
+      .ad-subtitle { font-size: 1em;}
+      .ad-arch { min-height: 70px;}
+      .ad-arch-text { font-size: 1em;}
+      .ad-section-title { font-size: 1em; padding: 3px 16vw;}
+      .ad-teacher { font-size: 0.9em; min-width: 60px;}
+      .ad-footer { font-size: 0.82em;}
+      .ad-contacts { font-size: 0.9em;}
+    }
+  </style>
+</head>
+<body>
+  <div class="ad-container">
+    <div class="ad-header">
+      مدرسہ اسلامیہ نورانیہ
+      <span class="ad-badge">اعلان داخلہ</span>
+    </div>
+    <div class="ad-subtitle">علمی و عملی سرگرمیاں</div>
+    <div class="ad-location">مرکز: نزد جامع مسجد، شہر/علاقہ</div>
+    <div class="ad-arch">
+      <div class="ad-arch-text">شعبہ حفظ و ناظرہ، درس نظامی، دارالافتاء و القضاء</div>
+    </div>
+    <div class="ad-section-title">مدرسین کرام</div>
+    <div class="ad-teachers-row">
+      <div class="ad-teacher">مولانا احمد</div>
+      <div class="ad-teacher">مولانا بشیر</div>
+      <div class="ad-teacher">قاری جمیل</div>
+      <div class="ad-teacher">مفتی سلیم</div>
+    </div>
+    <div class="ad-section-title" style="background:#466820;">داخلہ و رابطہ</div>
+    <div class="ad-contacts">
+      <div>0300-1234567</div>
+      <div>0311-9876543</div>
+    </div>
+    <div class="ad-footer">
+      تاریخ داخلہ: یکم شوال تا ۱۵ شوال<br>
+      اوقات: صبح ۸ بجے تا دوپہر ۱ بجے<br>
+      مزید معلومات کے لیے دیے گئے نمبرز پر رابطہ کریں۔
+    </div>
+  </div>
+</body>
+</html>

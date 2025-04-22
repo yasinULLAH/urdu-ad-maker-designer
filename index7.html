@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>دار العلوم زکریا پوسٹر ایڈیٹر</title>
+<link
+  href="https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap"
+  rel="stylesheet"
+/>
+<script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Noto+Nastaliq+Urdu', serif;
+    background: #bbffbc;
+    color: #000;
+    user-select: none; /* Disable text selection globally for drag */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1em;
+    overflow-x: hidden;
+  }
+  #poster {
+    background: #bbffbc;
+    width: 100%;
+    max-width: 720px; /* Base width */
+    aspect-ratio: 720 / 1018; /* Maintain aspect ratio based on max-width */
+    height: auto;
+    border-radius: 25px 25px 0 0;
+    box-sizing: border-box;
+    box-shadow: 0 0 6px #070;
+    position: relative; /* Container for absolute positioning */
+    overflow: hidden; /* Clip handles outside */
+    touch-action: none; /* Prevent default touch actions */
+  }
+  /* Make elements draggable/resizable */
+  .draggable {
+    position: absolute !important;
+    touch-action: none;
+    user-select: none; /* Prevent text selection during drag */
+    box-sizing: border-box; /* Include padding/border in size */
+    cursor: grab;
+    border: 1px dashed transparent; /* Show border on hover/select */
+  }
+  .draggable:hover {
+    border-color: rgba(0, 0, 255, 0.5);
+  }
+  .draggable.interact-dragging,
+  .draggable.interact-resizing,
+  .draggable.interact-rotating {
+    border-color: blue;
+    z-index: 10;
+    cursor: grabbing;
+  }
+  /* Default positions and sizes (relative to poster size) */
+  #headerBarWrapper { top: 1%; left: 5%; width: 90%; height: 8%; }
+  #headerBar {
+    background: #f6d925;
+    color: #000;
+    font-weight: 700;
+    font-size: 2.2rem; /* Adjust font size relative to container later */
+    padding: 0.25em 1em;
+    border-radius: 25px 50px 50px 25px;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* For small text */
+  }
+  #headerBar [contenteditable] { user-select: text; outline: none; width: 100%;}
+  #headerBar small {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    background: #000;
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 0.1em 0.5em;
+    border-radius: 2px 0 0 2px;
+    user-select: text;
+  }
+  #topSubtitlesWrapper { top: 10%; left: 5%; width: 90%; height: 4%; }
+  #topSubtitles {
+    display: flex; justify-content: space-between; font-size: 1rem; height: 100%;
+  }
+  #topSubtitles > div {
+    width: 48%; outline: none; user-select: text;
+  }
+  #centerShapeWrapper { top: 16%; left: 25%; width: 50%; height: 28%; }
+  #centerShape {
+    width: 100%; height: 100%; background: #a0d92e;
+    border-radius: 70% 70% 0 0 / 100% 100% 0 0;
+    position: relative;
+  }
+  #centerShape::before, #centerShape::after {
+    content: ""; position: absolute; bottom: 0;
+    width: 24%; height: 36%; background: #a0d92e;
+    border-radius: 60% 60% 0 0 / 100% 100% 0 0;
+  }
+  #centerShape::before { left: -12%; }
+  #centerShape::after { right: -12%; }
+  #centerTextWrapper { top: 22%; left: 35%; width: 30%; height: 16%; }
+  #insideCenterText {
+    outline: none; text-align: center; font-size: 2rem; font-weight: 600;
+    line-height: 1.3; user-select: text; color: #000; white-space: pre-line;
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  }
+  #bottomTextWrapper { top: 45%; left: 5%; width: 90%; height: 10%; }
+  #bottomTextContainer {
+    background: #ddf4d3; padding: 0.3em 1em; border-radius: 0 0 20px 20px;
+    font-weight: 700; font-size: 1.25rem; text-align: center;
+    user-select: text; outline: none; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #teachersTitleWrapper { top: 58%; left: 10%; width: 80%; height: 6%; }
+  #teachersTitle {
+    background: #7d1a0a; font-weight: 700; font-size: 1.3rem; color: #fff;
+    border-radius: 25px; text-align: center; padding: 0.4em 0;
+    user-select: text; outline: none; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #teachersListWrapper { top: 65%; left: 5%; width: 90%; height: 10%; }
+  #teachersList {
+    display: flex; flex-wrap: wrap; gap: 1%; justify-content: center; align-items: flex-start;
+    height: 100%; overflow-y: auto;
+  }
+  .teacherItem {
+    background: #6c2d00; color: #fff; border-radius: 6px; padding: 0.2em 0.7em;
+    font-size: 1rem; user-select: text; display: inline-flex; align-items: center;
+    gap: 0.25em; margin-bottom: 2px; flex-shrink: 0;
+    position: relative; /* For absolute buttons if needed */
+    cursor: text; /* Override grab cursor */
+  }
+  .teacherItem span[contenteditable="true"] { outline: none; min-width: 50px; }
+  .teacherItem button {
+    background: transparent; border: none; color: #ffcc55; font-weight: 700;
+    cursor: pointer; padding: 0 0.15em; font-size: 1.1rem; line-height: 1;
+    user-select: none;
+  }
+  #contactsListWrapper { top: 78%; left: 5%; width: 90%; height: 8%; }
+  #contactsList {
+    background: #003217; color: #fff; padding: 0.5em 1em; border-radius: 15px;
+    font-weight: 700; font-size: 1.2rem; display: flex; flex-wrap: wrap;
+    gap: 10px; justify-content: center; align-items: flex-start; height: 100%;
+    overflow-y: auto;
+  }
+  .contactItem {
+    background: #126211; border-radius: 8px; padding: 0.15em 0.6em;
+    user-select: text; display: inline-flex; align-items: center; gap: 0.3em;
+    font-size: 1.1rem; margin-bottom: 2px; flex-shrink: 0;
+    cursor: text; /* Override grab cursor */
+  }
+  .contactItem span[contenteditable="true"] { outline: none; min-width: 80px; }
+  .contactItem button {
+    background: transparent; border: none; color: #abe266; font-weight: 700;
+    cursor: pointer; font-size: 1.2rem; user-select: none; line-height: 1;
+  }
+  #announcementsWrapper { top: 88%; left: 10%; width: 80%; height: 8%; }
+  #announcements {
+    background: #002702; color: #aff314; border-radius: 0 15px 15px 0;
+    font-weight: 700; padding: 0.3em 1em 0.3em 0.7em; font-size: 1rem;
+    user-select: text; white-space: pre-wrap; outline: none; height: 100%;
+    overflow-y: auto;
+  }
+  /* Add/Remove Buttons */
+  .addBtn {
+    background: #002b00; color: #a5e38f; padding: 0.1em 0.4em;
+    border-radius: 20px; font-weight: 700; font-size: 1rem; cursor: pointer;
+    user-select: none; border: 1px solid #478d23; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin: 0 5px;
+  }
+  .addBtn:hover { background: #478d23; color: #0b3500; }
+  /* Controls outside poster */
+  #controls { display: flex; justify-content: center; gap: 10px; margin-top: 1em; }
+  button {
+    background: #34590b; color: #cdf03e; font-weight: 700; border: none;
+    cursor: pointer; padding: 0.5em 1em; border-radius: 15px; font-size: 1rem;
+    user-select: none; transition: background 0.3s ease;
+  }
+  button:hover { background: #81b731; color: #073600; }
+  /* Hide UI for export mode */
+  body.exporting #controls,
+  body.exporting .teacherItem button,
+  body.exporting .contactItem button,
+  body.exporting .addBtn,
+  body.exporting .draggable { border-color: transparent !important; }
+  /* Editable placeholders */
+  [contenteditable="true"]:empty:before {
+    content: attr(data-placeholder); color: rgba(0, 0, 0, 0.4); user-select: none;
+  }
+  /* Adjust font sizes based on container height */
+  .draggable { --base-font-size: 1rem; font-size: calc(var(--base-font-size) * var(--scale-factor, 1)); }
+</style>
+</head>
+<body>
+
+<div id="poster" role="main" aria-label="دار العلوم زکریا پوسٹر ایڈیٹر">
+  <!-- Wrappers for interact.js -->
+  <div id="headerBarWrapper" class="draggable">
+    <div id="headerBar">
+      <small>اعلان داخلہ</small>
+      <div contenteditable="true" spellcheck="false" id="title" data-placeholder="دار العلوم زکریا" aria-label="عنوان"></div>
+    </div>
+  </div>
+  <div id="topSubtitlesWrapper" class="draggable">
+    <div id="topSubtitles">
+      <div contenteditable="true" spellcheck="false" id="subtitleRight" data-placeholder="علمی و عملی سرگرمیاں" aria-label="ذیلی عنوان دائیں"></div>
+      <div contenteditable="true" spellcheck="false" id="subtitleLeft" data-placeholder="لنگ روڈ ..." aria-label="ذیلی عنوان بائیں"></div>
+    </div>
+  </div>
+  <div id="centerShapeWrapper" class="draggable">
+    <div id="centerShape" aria-hidden="true"></div>
+  </div>
+  <div id="centerTextWrapper" class="draggable">
+     <div contenteditable="true" spellcheck="false" id="centerText" data-placeholder="..." aria-label="مرکزی متن"></div>
+  </div>
+  <div id="bottomTextWrapper" class="draggable">
+    <div id="bottomTextContainer" contenteditable="true" spellcheck="false" data-placeholder="نچلا ٹیکسٹ" aria-label="نچلا متن"></div>
+  </div>
+  <div id="teachersTitleWrapper" class="draggable">
+     <div id="teachersTitle" contenteditable="true" spellcheck="false" data-placeholder="مدرسین حضرات">
+        مدرسین حضرات <span class="addBtn" id="addTeacherBtn" title="نیا مدرس شامل کریں" aria-label="نیا مدرس شامل کریں">+</span>
+     </div>
+  </div>
+   <div id="teachersListWrapper" class="draggable">
+     <div id="teachersList" aria-live="polite" aria-label="مدرسین کی فہرست"></div>
+   </div>
+  <div id="contactsListWrapper" class="draggable">
+     <div id="contactsList" aria-live="polite" aria-label="رابطہ نمبر">
+       <span class="addBtn" id="addContactBtn" title="نیا نمبر شامل کریں" aria-label="نیا نمبر شامل کریں">+</span>
+     </div>
+   </div>
+   <div id="announcementsWrapper" class="draggable">
+     <div id="announcements" contenteditable="true" spellcheck="false" data-placeholder="اعلان" aria-label="اعلان داخلہ"></div>
+   </div>
+</div>
+
+<div id="controls" role="region" aria-label="پوسٹر کنٹرولز">
+  <button id="resetBtn" type="button" aria-label="ڈیفالٹ بحال کریں">ری سیٹ ٹو ڈیفالٹ</button>
+  <button id="exportBtn" type="button" aria-label="پوسٹر کو امیج کے طور پر محفوظ کریں">امپورٹ ٹو امیج</button>
+</div>
+
+<script>
+  const defaultData = {
+    elements: {
+      headerBarWrapper: { text: "دار العلوم زکریا", x: 5, y: 1, width: 90, height: 8, rotation: 0, baseFontSize: 2.2 },
+      topSubtitlesWrapper: { textRight: "علمی و عملی سرگرمیاں", textLeft: "لنگ روڈ نزدیک دادی پل ڈومیل", x: 5, y: 10, width: 90, height: 4, rotation: 0, baseFontSize: 1 },
+      centerShapeWrapper: { x: 25, y: 16, width: 50, height: 28, rotation: 0 },
+      centerTextWrapper: { text: "دارالا فتاء و القضاء", x: 35, y: 22, width: 30, height: 16, rotation: 0, baseFontSize: 2 },
+      bottomTextWrapper: { text: "مفتی محسن اللہ صاحب | مفتی محمد جاوید صاحب | مفتی عبدالجلیل صاحب | قاری ویحد اللہ صاحب | قاری محمد شیر صاحب | مولانا شفیع الرحمن صاحب", x: 5, y: 45, width: 90, height: 10, rotation: 0, baseFontSize: 1.25 },
+      teachersTitleWrapper: { text: "مدرسین حضرات", x: 10, y: 58, width: 80, height: 6, rotation: 0, baseFontSize: 1.3 },
+      teachersListWrapper: { teachers: ["مفتی محسن اللہ صاحب", "مفتی محمد جاوید صاحب", "مفتی عبدالجلیل صاحب", "قاری ویحد اللہ صاحب", "قاری محمد شیر صاحب", "مولانا شفیع الرحمن صاحب"], x: 5, y: 65, width: 90, height: 10, rotation: 0, baseFontSize: 1 },
+      contactsListWrapper: { contacts: ["03364041841", "03319327288"], x: 5, y: 78, width: 90, height: 8, rotation: 0, baseFontSize: 1.1 },
+      announcementsWrapper: { text: "داخلہ تاریخ: 1 شوال سے لیکر 18 شوال تک۔ 18 شوال سے باقاعدہ داخلہ جاری ہے ان شاء اللہ۔", x: 10, y: 88, width: 80, height: 8, rotation: 0, baseFontSize: 1 },
+    }
+  };
+
+  const poster = document.getElementById("poster");
+  const elements = {
+      headerBarWrapper: document.getElementById("headerBarWrapper"),
+      title: document.getElementById("title"),
+      topSubtitlesWrapper: document.getElementById("topSubtitlesWrapper"),
+      subtitleRight: document.getElementById("subtitleRight"),
+      subtitleLeft: document.getElementById("subtitleLeft"),
+      centerShapeWrapper: document.getElementById("centerShapeWrapper"),
+      centerTextWrapper: document.getElementById("centerTextWrapper"),
+      centerText: document.getElementById("centerText"),
+      bottomTextWrapper: document.getElementById("bottomTextWrapper"),
+      bottomTextContainer: document.getElementById("bottomTextContainer"),
+      teachersTitleWrapper: document.getElementById("teachersTitleWrapper"),
+      teachersTitle: document.getElementById('teachersTitle'),
+      teachersListWrapper: document.getElementById("teachersListWrapper"),
+      teachersList: document.getElementById("teachersList"),
+      contactsListWrapper: document.getElementById("contactsListWrapper"),
+      contactsList: document.getElementById("contactsList"),
+      announcementsWrapper: document.getElementById("announcementsWrapper"),
+      announcements: document.getElementById("announcements"),
+  };
+
+  const addTeacherBtn = document.getElementById("addTeacherBtn");
+  const addContactBtn = document.getElementById("addContactBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const exportBtn = document.getElementById("exportBtn");
+
+  function updateElementTransform(target, x, y, width, height, rotation) {
+      target.style.left = `${x}%`;
+      target.style.top = `${y}%`;
+      target.style.width = `${width}%`;
+      target.style.height = `${height}%`;
+      target.style.transform = `rotate(${rotation}deg)`;
+      target.setAttribute('data-x', x);
+      target.setAttribute('data-y', y);
+      target.setAttribute('data-width', width);
+      target.setAttribute('data-height', height);
+      target.setAttribute('data-rotation', rotation);
+
+      // Adjust font size based on height (simple scaling)
+      const initialHeightPercent = defaultData.elements[target.id]?.height;
+      const initialFontSizeRem = defaultData.elements[target.id]?.baseFontSize;
+      if (initialHeightPercent && initialFontSizeRem) {
+          const scaleFactor = height / initialHeightPercent;
+          // Apply scale factor using CSS variable
+          target.style.setProperty('--scale-factor', scaleFactor);
+      } else {
+           target.style.removeProperty('--scale-factor');
+      }
+  }
+
+ function setupInteract(target) {
+    let x = parseFloat(target.getAttribute('data-x')) || 0;
+    let y = parseFloat(target.getAttribute('data-y')) || 0;
+    let width = parseFloat(target.getAttribute('data-width')) || 10;
+    let height = parseFloat(target.getAttribute('data-height')) || 5;
+    let rotation = parseFloat(target.getAttribute('data-rotation')) || 0;
+
+    interact(target)
+      .draggable({
+        listeners: {
+          start(event) {
+             event.target.classList.add('interact-dragging');
+          },
+          move(event) {
+            const posterRect = poster.getBoundingClientRect();
+            x += (event.dx / posterRect.width) * 100;
+            y += (event.dy / posterRect.height) * 100;
+            updateElementTransform(event.target, x, y, width, height, rotation);
+          },
+          end(event) {
+            event.target.classList.remove('interact-dragging');
+            saveData();
+          }
+        },
+        modifiers: [
+            interact.modifiers.restrictRect({
+                restriction: 'parent', // Keep within #poster
+                endOnly: false
+            })
+        ],
+        inertia: false
+      })
+      .resizable({
+        edges: { left: true, right: true, bottom: true, top: true },
+        listeners: {
+          start(event) {
+             event.target.classList.add('interact-resizing');
+          },
+          move: function (event) {
+            const posterRect = poster.getBoundingClientRect();
+            width = (event.rect.width / posterRect.width) * 100;
+            height = (event.rect.height / posterRect.height) * 100;
+            x += (event.deltaRect.left / posterRect.width) * 100;
+            y += (event.deltaRect.top / posterRect.height) * 100;
+            updateElementTransform(event.target, x, y, width, height, rotation);
+          },
+          end(event){
+             event.target.classList.remove('interact-resizing');
+             saveData();
+          }
+        },
+        modifiers: [
+            interact.modifiers.restrictSize({ min: { width: 5, height: 2 } }), // Min size in %
+            interact.modifiers.restrictRect({ restriction: 'parent' })
+        ],
+        inertia: false
+      })
+      .gesturable({ // For rotation (pinch/twist on touch) - more complex setup needed for mouse rotation handle
+           listeners: {
+                start(event) {
+                    event.target.classList.add('interact-rotating');
+                },
+                move (event) {
+                    rotation += event.da; // da is delta angle
+                    updateElementTransform(event.target, x, y, width, height, rotation);
+                },
+                end(event) {
+                    event.target.classList.remove('interact-rotating');
+                    saveData();
+                }
+           }
+      })
+      .on('doubletap', function(event) {
+         // Allow editing on double tap/click inside
+         const contentEditable = event.currentTarget.querySelector('[contenteditable="true"]');
+         if(contentEditable) {
+            contentEditable.focus();
+            // Select all text
+            const range = document.createRange();
+            range.selectNodeContents(contentEditable);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+         }
+         event.preventDefault(); // Prevent interact interfering
+      });
+
+      // Prevent drag start if target is contenteditable or button
+      interact(target).on('down', function(event) {
+        if (event.target.closest('[contenteditable="true"], button, .addBtn')) {
+           event.interaction.stop();
+        }
+      });
+ }
+
+
+  function saveData() {
+    const dataToSave = { elements: {} };
+    document.querySelectorAll('.draggable').forEach(el => {
+        const id = el.id;
+        const elementData = {
+            x: parseFloat(el.getAttribute('data-x')),
+            y: parseFloat(el.getAttribute('data-y')),
+            width: parseFloat(el.getAttribute('data-width')),
+            height: parseFloat(el.getAttribute('data-height')),
+            rotation: parseFloat(el.getAttribute('data-rotation')),
+            baseFontSize: defaultData.elements[id]?.baseFontSize || null
+        };
+
+        // Specific content saving logic
+        if (id === 'headerBarWrapper') elementData.text = elements.title.textContent.trim();
+        if (id === 'topSubtitlesWrapper') {
+            elementData.textRight = elements.subtitleRight.textContent.trim();
+            elementData.textLeft = elements.subtitleLeft.textContent.trim();
+        }
+        if (id === 'centerTextWrapper') elementData.text = elements.centerText.textContent.trim();
+        if (id === 'bottomTextWrapper') elementData.text = elements.bottomTextContainer.textContent.trim();
+        if (id === 'teachersTitleWrapper') elementData.text = elements.teachersTitle.textContent.replace(/\+/g, '').trim(); // Remove '+'
+        if (id === 'announcementsWrapper') elementData.text = elements.announcements.textContent.trim();
+        if (id === 'teachersListWrapper') {
+             elementData.teachers = Array.from(elements.teachersList.querySelectorAll(".teacherItem span")).map(
+                (sp) => sp.textContent.trim()
+             ).filter(Boolean); // Filter out empty ones
+        }
+        if (id === 'contactsListWrapper') {
+             elementData.contacts = Array.from(elements.contactsList.querySelectorAll(".contactItem span")).map(
+                (sp) => sp.textContent.trim()
+            ).filter(Boolean);
+        }
+
+        dataToSave.elements[id] = elementData;
+    });
+    localStorage.setItem("urduPosterDataV2", JSON.stringify(dataToSave));
+  }
+
+  function loadData() {
+    let saved = localStorage.getItem("urduPosterDataV2");
+    if (!saved) return null;
+    try {
+      return JSON.parse(saved);
+    } catch {
+      localStorage.removeItem("urduPosterDataV2"); // Clear corrupted data
+      return null;
+    }
+  }
+
+ function renderTeachers(container, teachers) {
+    container.innerHTML = ""; // Clear only teachers, keep button if inside
+    teachers.forEach(name => addTeacherElement(container, name));
+    // Ensure add button is present if it belongs here (in this case, it's in the title)
+ }
+
+ function addTeacherElement(container, name = "") {
+      const div = document.createElement("div");
+      div.className = "teacherItem";
+      div.innerHTML = `<span contenteditable="true" spellcheck="false" data-placeholder="نام">${name}</span><button aria-label="حذف کریں" title="حذف کریں">×</button>`;
+      container.appendChild(div); // Append directly to list container
+
+      const span = div.querySelector("span");
+      const button = div.querySelector("button");
+
+      button.onclick = () => {
+        div.remove();
+        saveData();
+      };
+      span.addEventListener("input", saveData);
+      span.addEventListener("blur", () => { // Remove empty on blur
+          if (span.textContent.trim() === "") {
+              div.remove();
+              saveData();
+          }
+      });
+      if (!name) span.focus(); // Focus new empty element
+ }
+
+
+ function renderContacts(container, contacts) {
+    container.querySelectorAll(".contactItem").forEach((el) => el.remove()); // Remove only contacts
+    contacts.forEach(num => addContactElement(container, num));
+    // Ensure add button is present
+    container.appendChild(addContactBtn);
+ }
+
+ function addContactElement(container, num = "") {
+      const spanItem = document.createElement("span");
+      spanItem.className = "contactItem";
+      spanItem.innerHTML = `<span contenteditable="true" spellcheck="false" data-placeholder="نمبر">${num}</span><button aria-label="حذف کریں" title="حذف کریں">×</button>`;
+      container.insertBefore(spanItem, addContactBtn); // Insert before button
+
+      const spanContent = spanItem.querySelector("span");
+      const button = spanItem.querySelector("button");
+
+      button.onclick = () => {
+        spanItem.remove();
+        saveData();
+      };
+      spanContent.addEventListener("input", saveData);
+       spanContent.addEventListener("blur", () => {
+          if (spanContent.textContent.trim() === "") {
+              spanItem.remove();
+              saveData();
+          }
+      });
+      if (!num) spanContent.focus();
+ }
+
+  addTeacherBtn.onclick = () => {
+    addTeacherElement(elements.teachersList);
+    saveData();
+  };
+
+  addContactBtn.onclick = () => {
+    addContactElement(elements.contactsList);
+    saveData();
+  };
+
+  resetBtn.onclick = () => {
+    localStorage.removeItem("urduPosterDataV2");
+    loadDefaults();
+  };
+
+  function loadDefaults(useDefault = true) {
+      const dataToLoad = useDefault ? defaultData : loadData();
+      if (!dataToLoad || !dataToLoad.elements) {
+        console.error("Failed to load data, using hardcoded defaults.");
+        loadDefaults(true); // Force default if load fails
+        return;
+      }
+
+      Object.keys(dataToLoad.elements).forEach(id => {
+          const el = document.getElementById(id);
+          const savedState = dataToLoad.elements[id];
+          if (el && savedState) {
+              // Restore transform
+              updateElementTransform(el, savedState.x, savedState.y, savedState.width, savedState.height, savedState.rotation);
+
+              // Restore content
+              if (id === 'headerBarWrapper' && elements.title) elements.title.textContent = savedState.text;
+              if (id === 'topSubtitlesWrapper') {
+                  if(elements.subtitleRight) elements.subtitleRight.textContent = savedState.textRight;
+                  if(elements.subtitleLeft) elements.subtitleLeft.textContent = savedState.textLeft;
+              }
+               if (id === 'centerTextWrapper' && elements.centerText) elements.centerText.textContent = savedState.text;
+               if (id === 'bottomTextWrapper' && elements.bottomTextContainer) elements.bottomTextContainer.textContent = savedState.text;
+               if (id === 'teachersTitleWrapper' && elements.teachersTitle) {
+                  // Clear existing content, then set text, then re-append button
+                  const btn = elements.teachersTitle.querySelector('.addBtn');
+                  elements.teachersTitle.textContent = savedState.text + " "; // Add space before button
+                  if(btn) elements.teachersTitle.appendChild(btn);
+               }
+               if (id === 'announcementsWrapper' && elements.announcements) elements.announcements.textContent = savedState.text;
+               if (id === 'teachersListWrapper' && elements.teachersList && savedState.teachers) {
+                  renderTeachers(elements.teachersList, savedState.teachers);
+               }
+               if (id === 'contactsListWrapper' && elements.contactsList && savedState.contacts) {
+                  renderContacts(elements.contactsList, savedState.contacts);
+               }
+
+               // Re-setup interact after applying styles
+               setupInteract(el);
+          }
+      });
+       // Ensure buttons are in correct place after text content changes
+       if(elements.teachersTitle && addTeacherBtn.parentElement !== elements.teachersTitle) {
+            elements.teachersTitle.appendChild(addTeacherBtn);
+       }
+        if(elements.contactsList && addContactBtn.parentElement !== elements.contactsList) {
+            elements.contactsList.appendChild(addContactBtn);
+        }
+  }
+
+  exportBtn.onclick = async () => {
+    document.body.classList.add("exporting");
+    // Deselect any active interactable element visually
+    interact.stop();
+    await new Promise(resolve => setTimeout(resolve, 100)); // Wait for styles to apply
+
+    try {
+        const scale = 2; // Higher resolution
+        const canvas = await html2canvas(poster, {
+            scale: scale,
+            backgroundColor: '#bbffbc', // Match poster background
+            useCORS: true,
+            logging: false,
+             onclone: (clonedDoc) => {
+                 // Ensure fonts are loaded in cloned doc if needed, or styles applied
+                 const clonedPoster = clonedDoc.getElementById('poster');
+                 if (clonedPoster) {
+                     clonedPoster.style.boxShadow = 'none'; // Remove shadow for cleaner export
+                 }
+             }
+        });
+
+        const dataUrl = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = "urdu-poster.png";
+        a.click();
+
+    } catch (error) {
+        console.error("Export failed:", error);
+        alert("ایکسپورٹ میں خرابی: " + error.message);
+    } finally {
+        document.body.classList.remove("exporting");
+    }
+  };
+
+  // Initialize
+  (function () {
+     const data = loadData();
+     loadDefaults(data === null); // Load default if no saved data
+
+     // Make sure all contenteditable fields save data on input/blur
+     poster.querySelectorAll('[contenteditable="true"]').forEach(el => {
+          el.addEventListener('input', saveData);
+          el.addEventListener('blur', saveData); // Save on losing focus too
+     });
+ })();
+
+</script>
+</body>
+</html>

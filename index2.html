@@ -1,0 +1,2152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Islamic Poster Designer</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Amiri:wght@400;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Fabric.js for Canvas Editing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    
+    <!-- html2canvas for Exporting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2a5d84;
+            --secondary-color: #4b9c6c;
+            --accent-color: #c99a2e;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --sidebar-width: 280px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--dark-color);
+            background-color: #f0f0f0;
+            direction: ltr;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: white;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+            padding: 1rem;
+            z-index: 10;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #f0f0f0;
+            overflow: hidden;
+        }
+        
+        .canvas-toolbar {
+            padding: 0.5rem 1rem;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .canvas-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            padding: 2rem;
+        }
+        
+        #canvas-container {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            background-color: white;
+            margin: auto;
+        }
+        
+        .sidebar h2 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        .template-item {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        
+        .template-item:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .template-item img {
+            width: 40px;
+            height: 40px;
+            margin-right: 0.5rem;
+            object-fit: cover;
+        }
+        
+        .template-item.active {
+            border-color: var(--primary-color);
+            background-color: rgba(42, 93, 132, 0.1);
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        button:hover {
+            background-color: #1e4663;
+        }
+        
+        button i {
+            margin-right: 0.5rem;
+        }
+        
+        .button-group {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .section-title {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .section-content {
+            display: block;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            font-family: 'Noto Nastaliq Urdu', serif;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.3rem;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .color-picker {
+            display: flex;
+            margin-bottom: 0.5rem;
+            align-items: center;
+        }
+        
+        .color-picker input[type="color"] {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: none;
+        }
+        
+        .color-picker label {
+            margin-right: 0.5rem;
+            margin-bottom: 0;
+        }
+        
+        .property-editor {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .property-editor .property {
+            flex: 1;
+            min-width: 80px;
+        }
+        
+        .rtl-text {
+            direction: rtl;
+            font-family: "Noto Nastaliq Urdu", serif;
+            text-align: right;
+        }
+        
+        .font-selector {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .icon-item {
+            text-align: center;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        
+        .icon-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .icon-item i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: var(--dark-color);
+            color: white;
+            text-align: center;
+            border-radius: 4px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-height: 40%;
+                overflow-y: auto;
+            }
+            
+            .canvas-container {
+                height: 60%;
+            }
+        }
+        
+        /* Islamic design elements */
+        .design-pattern {
+            width: 48%;
+            height: 60px;
+            margin: 1%;
+            display: inline-block;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 1.5rem;
+            border-radius: 8px;
+            max-width: 500px;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            right: 1rem;
+            top: 0.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        #qrcode {
+            text-align: center;
+            margin: 1rem 0;
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #3d7d58;
+        }
+        
+        .btn-accent {
+            background-color: var(--accent-color);
+        }
+        
+        .btn-accent:hover {
+            background-color: #a67b22;
+        }
+        
+        /* Collapsible sections */
+        .collapse-icon::after {
+            content: "▼";
+            font-size: 0.7rem;
+            transition: transform 0.3s;
+        }
+        
+        .collapsed .collapse-icon::after {
+            content: "►";
+        }
+        
+        .collapsed .section-content {
+            display: none;
+        }
+        
+        .status-message {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #333;
+            color: white;
+            border-radius: 4px;
+            z-index: 1000;
+            display: none;
+            animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+            opacity: 0;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        /* Layer controls */
+        .layer-controls {
+            margin-top: 0.5rem;
+        }
+        
+        .layer-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .layer-buttons button {
+            flex: 1;
+            padding: 0.3rem;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar with controls -->
+        <div class="sidebar">
+            <h2>Islamic Poster Designer</h2>
+            
+            <!-- Templates Section -->
+            <div class="section">
+                <div class="section-title" onclick="toggleSection(this)">
+                    <span>Templates</span>
+                    <span class="collapse-icon"></span>
+                </div>
+                <div class="section-content">
+                    <div id="templates-container">
+                        <div class="template-item" onclick="loadTemplate('admission')">
+                            <img src="/api/placeholder/40/40" alt="Admission Template">
+                            <span>Admission Announcement</span>
+                        </div>
+                        <div class="template-item" onclick="loadTemplate('event')">
+                            <img src="/api/placeholder/40/40" alt="Event Template">
+                            <span>Event Announcement</span>
+                        </div>
+                        <div class="template-item" onclick="loadTemplate('seminar')">
+                            <img src="/api/placeholder/40/40" alt="Seminar Template">
+                            <span>Seminar/Workshop</span>
+                        </div>
+                        <div class="template-item" onclick="loadTemplate('teachers')">
+                            <img src="/api/placeholder/40/40" alt="Teachers Template">
+                            <span>Teachers Introduction</span>
+                        </div>
+                        <div class="template-item" onclick="loadTemplate('blank')">
+                            <img src="/api/placeholder/40/40" alt="Blank Template">
+                            <span>Blank Template</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Text Tools Section -->
+            <div class="section">
+                <div class="section-title" onclick="toggleSection(this)">
+                    <span>Text Tools</span>
+                    <span class="collapse-icon"></span>
+                </div>
+                <div class="section-content">
+                    <button onclick="addTextBox('ltr')"><i class="fa fa-font"></i> Add English Text</button>
+                    <button onclick="addTextBox('rtl')" class="btn-secondary"><i class="fa fa-font"></i> Add Urdu/Arabic</button>
+                    
+                    <div id="text-properties" style="display: none; margin-top: 1rem;">
+                        <h4>Text Properties</h4>
+                        <textarea id="text-content" placeholder="Enter text here..." rows="3"></textarea>
+                        
+                        <div class="property-editor">
+                            <div class="property">
+                                <label>Font Family</label>
+                                <select id="text-font-family">
+                                    <option value="Roboto">English (Roboto)</option>
+                                    <option value="Noto Nastaliq Urdu">Urdu (Nastaliq)</option>
+                                    <option value="Amiri">Arabic (Amiri)</option>
+                                </select>
+                            </div>
+                            <div class="property">
+                                <label>Size</label>
+                                <input type="number" id="text-font-size" min="8" max="200" value="24">
+                            </div>
+                        </div>
+                        
+                        <div class="color-picker">
+                            <label>Color:</label>
+                            <input type="color" id="text-color" value="#000000">
+                        </div>
+                        
+                        <div class="property-editor">
+                            <div class="property">
+                                <label><input type="checkbox" id="text-bold"> Bold</label>
+                            </div>
+                            <div class="property">
+                                <label><input type="checkbox" id="text-italic"> Italic</label>
+                            </div>
+                            <div class="property">
+                                <label><input type="checkbox" id="text-underline"> Underline</label>
+                            </div>
+                        </div>
+                        
+                        <div class="layer-controls">
+                            <div class="layer-buttons">
+                                <button onclick="bringForward()"><i class="fa fa-arrow-up"></i> Forward</button>
+                                <button onclick="sendBackward()"><i class="fa fa-arrow-down"></i> Backward</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shapes Section -->
+            <div class="section">
+                <div class="section-title" onclick="toggleSection(this)">
+                    <span>Shapes & Backgrounds</span>
+                    <span class="collapse-icon"></span>
+                </div>
+                <div class="section-content">
+                    <div class="button-group">
+                        <button onclick="addShape('rect')"><i class="fa fa-square"></i> Rectangle</button>
+                        <button onclick="addShape('circle')"><i class="fa fa-circle"></i> Circle</button>
+                        <button onclick="addShape('triangle')"><i class="fa fa-play"></i> Triangle</button>
+                    </div>
+                    
+                    <div class="color-picker">
+                        <label>Background:</label>
+                        <input type="color" id="background-color" value="#ffffff" onchange="changeBackgroundColor(this.value)">
+                    </div>
+                    
+                    <h4>Islamic Patterns</h4>
+                    <div class="pattern-container">
+                        <div class="design-pattern" style="background-image: url('/api/placeholder/120/60');" onclick="addPattern(1)"></div>
+                        <div class="design-pattern" style="background-image: url('/api/placeholder/120/60');" onclick="addPattern(2)"></div>
+                        <div class="design-pattern" style="background-image: url('/api/placeholder/120/60');" onclick="addPattern(3)"></div>
+                        <div class="design-pattern" style="background-image: url('/api/placeholder/120/60');" onclick="addPattern(4)"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Islamic Icons Section -->
+            <div class="section">
+                <div class="section-title" onclick="toggleSection(this)">
+                    <span>Islamic Icons</span>
+                    <span class="collapse-icon"></span>
+                </div>
+                <div class="section-content">
+                    <div class="icon-grid">
+                        <div class="icon-item" onclick="addIcon('mosque')">
+                            <i class="fa fa-mosque"></i>
+                            <div>Mosque</div>
+                        </div>
+                        <div class="icon-item" onclick="addIcon('book')">
+                            <i class="fa fa-book-quran"></i>
+                            <div>Quran</div>
+                        </div>
+                        <div class="icon-item" onclick="addIcon('star')">
+                            <i class="fa fa-star-and-crescent"></i>
+                            <div>Star & Crescent</div>
+                        </div>
+                        <div class="icon-item" onclick="addIcon('kaaba')">
+                            <i class="fa fa-kaaba"></i>
+                            <div>Kaaba</div>
+                        </div>
+                        <div class="icon-item" onclick="addIcon('prayer')">
+                            <i class="fa fa-hands-praying"></i>
+                            <div>Prayer</div>
+                        </div>
+                        <div class="icon-item" onclick="addIcon('calendar')">
+                            <i class="fa fa-calendar-days"></i>
+                            <div>Calendar</div>
+                        </div>
+                        <div class="icon-item" onclick="addIcon('graduate')">
+                            <i class="fa fa-graduation-cap"></i>
+                            <div>Graduation</div>
+                        </div>
+                        <div class="icon-item" onclick="addIcon('phone')">
+                            <i class="fa fa-phone"></i>
+                            <div>Phone</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Images Section -->
+            <div class="section">
+                <div class="section-title" onclick="toggleSection(this)">
+                    <span>Images</span>
+                    <span class="collapse-icon"></span>
+                </div>
+                <div class="section-content">
+                    <div class="button-group">
+                        <label for="upload-image" class="button" style="display: inline-block; cursor: pointer;">
+                            <i class="fa fa-upload"></i> Upload Image
+                        </label>
+                        <input id="upload-image" type="file" accept="image/*" style="display: none;" onchange="uploadImage(event)">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- QR Code Section -->
+            <div class="section">
+                <div class="section-title" onclick="toggleSection(this)">
+                    <span>QR Code</span>
+                    <span class="collapse-icon"></span>
+                </div>
+                <div class="section-content">
+                    <input type="text" id="qr-data" placeholder="Enter URL or text for QR code" value="https://example.com">
+                    <button onclick="generateQRCode()"><i class="fa fa-qrcode"></i> Generate QR Code</button>
+                </div>
+            </div>
+            
+            <!-- Export Section -->
+            <div class="section">
+                <div class="section-title" onclick="toggleSection(this)">
+                    <span>Save & Export</span>
+                    <span class="collapse-icon"></span>
+                </div>
+                <div class="section-content">
+                    <div class="button-group">
+                        <button onclick="exportImage()"><i class="fa fa-download"></i> Export As Image</button>
+                        <button onclick="saveDesign()" class="btn-secondary"><i class="fa fa-save"></i> Save Design</button>
+                        <label for="load-design" class="button btn-accent" style="display: inline-block; cursor: pointer;">
+                            <i class="fa fa-upload"></i> Load Design
+                        </label>
+                        <input id="load-design" type="file" accept=".json" style="display: none;" onchange="loadDesignFile(event)">
+                    </div>
+                    <div class="property-editor">
+                        <div class="property">
+                            <label>Poster Size</label>
+                            <select id="poster-size" onchange="changePosterSize()">
+                                <option value="a4">A4 Portrait</option>
+                                <option value="a4-landscape">A4 Landscape</option>
+                                <option value="a3">A3 Portrait</option>
+                                <option value="a3-landscape">A3 Landscape</option>
+                                <option value="square">Square (1:1)</option>
+                                <option value="custom">Custom Size</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="custom-size" style="display: none;">
+                        <div class="property-editor">
+                            <div class="property">
+                                <label>Width (px)</label>
+                                <input type="number" id="custom-width" value="800" min="100" max="3000">
+                            </div>
+                            <div class="property">
+                                <label>Height (px)</label>
+                                <input type="number" id="custom-height" value="1100" min="100" max="3000">
+                            </div>
+                        </div>
+                        <button onclick="applyCustomSize()" class="btn-secondary">Apply Size</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Canvas Container -->
+        <div class="canvas-container">
+            <div class="canvas-toolbar">
+                <div>
+                    <button onclick="undo()" class="tooltip">
+                        <i class="fa fa-undo"></i> Undo
+                        <span class="tooltiptext">Undo last action</span>
+                    </button>
+                    <button onclick="redo()" class="tooltip">
+                        <i class="fa fa-redo"></i> Redo
+                        <span class="tooltiptext">Redo last action</span>
+                    </button>
+                    <button onclick="deleteSelected()" class="tooltip">
+                        <i class="fa fa-trash"></i> Delete
+                        <span class="tooltiptext">Delete selected object</span>
+                    </button>
+                </div>
+                <div>
+                    <button onclick="shareWhatsApp()" class="btn-secondary tooltip">
+                        <i class="fab fa-whatsapp"></i> Share
+                        <span class="tooltiptext">Share via WhatsApp</span>
+                    </button>
+                    <button onclick="printPoster()" class="btn-accent tooltip">
+                        <i class="fa fa-print"></i> Print
+                        <span class="tooltiptext">Print poster</span>
+                    </button>
+                </div>
+            </div>
+            <div class="canvas-wrapper">
+                <div id="canvas-container">
+                    <canvas id="canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- QR Code Modal -->
+    <div id="qr-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('qr-modal')">&times;</span>
+            <h2>QR Code</h2>
+            <div id="qrcode"></div>
+            <button onclick="addQRCodeToCanvas()">Add to Poster</button>
+        </div>
+    </div>
+    
+    <!-- Status Message -->
+    <div id="status-message" class="status-message"></div>
+    
+    <script>
+        // Global variables
+        let canvas;
+        let undoStack = [];
+        let redoStack = [];
+        let canvasHistory = [];
+        let historyIndex = -1;
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCanvas();
+            setupEventListeners();
+            loadTemplate('blank'); // Start with blank template
+        });
+        
+        // Initialize canvas
+        function initializeCanvas() {
+            canvas = new fabric.Canvas('canvas', {
+                width: 800,
+                height: 1100, // A4 size in pixels at 96 DPI
+                backgroundColor: '#ffffff'
+            });
+            
+            // Enable history tracking
+            canvas.on('object:modified', saveCanvasState);
+            canvas.on('object:added', saveCanvasState);
+            canvas.on('object:removed', saveCanvasState);
+            
+            // Enable selection events
+            canvas.on('selection:created', updateTextControls);
+            canvas.on('selection:updated', updateTextControls);
+            canvas.on('selection:cleared', hideTextControls);
+            
+            // Save initial state
+            saveCanvasState();
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Text properties controls
+            document.getElementById('text-content').addEventListener('input', updateSelectedText);
+            document.getElementById('text-font-family').addEventListener('change', updateTextStyle);
+            document.getElementById('text-font-size').addEventListener('input', updateTextStyle);
+            document.getElementById('text-color').addEventListener('input', updateTextStyle);
+            document.getElementById('text-bold').addEventListener('change', updateTextStyle);
+            document.getElementById('text-italic').addEventListener('change', updateTextStyle);
+            document.getElementById('text-underline').addEventListener('change', updateTextStyle);
+            
+            // Custom size dropdown
+            document.getElementById('poster-size').addEventListener('change', function() {
+                const customSizeDiv = document.getElementById('custom-size');
+                if (this.value === 'custom') {
+                    customSizeDiv.style.display = 'block';
+                } else {
+                    customSizeDiv.style.display = 'none';
+                    changePosterSize();
+                }
+            });
+        }
+        
+        // Toggle section collapse
+        function toggleSection(element) {
+            const section = element.parentElement;
+            section.classList.toggle('collapsed');
+        }
+        
+        // Load template
+        function loadTemplate(templateName) {
+            // Clear canvas
+            canvas.clear();
+            
+            // Set all template items to inactive
+            const templateItems = document.querySelectorAll('.template-item');
+            templateItems.forEach(item => item.classList.remove('active'));
+            
+            // Highlight the selected template
+            const selectedItem = document.querySelector(`.template-item[onclick="loadTemplate('${templateName}')"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+            }
+            
+            // Set canvas size based on template
+            let width = 800;
+            let height = 1100;
+            
+            // Reset the poster size dropdown
+            document.getElementById('poster-size').value = 'a4';
+            
+            // Load appropriate template
+            switch (templateName) {
+                case 'admission':
+                    createAdmissionTemplate();
+                    break;
+                case 'event':
+                    createEventTemplate();
+                    break;
+                case 'seminar':
+                    createSeminarTemplate();
+                    break;
+                case 'teachers':
+                    createTeachersTemplate();
+                    break;
+                case 'blank':
+                    // Already cleared above, just add a basic background
+                    canvas.setBackgroundColor('#ffffff', canvas.renderAll.bind(canvas));
+                    break;
+            }
+            
+            // Reset history
+            undoStack = [];
+            redoStack = [];
+            saveCanvasState();
+            
+            // Show a status message
+            showStatusMessage(`Loaded ${templateName} template`);
+        }
+        
+        // Create Admission Template
+        function createAdmissionTemplate() {
+            // Set background color
+            canvas.setBackgroundColor('#f5f5dc', canvas.renderAll.bind(canvas));
+            
+            // Add header banner
+            const headerRect = new fabric.Rect({
+                left: 0,
+                top: 0,
+                width: canvas.width,
+                height: 150,
+                fill: '#006400',
+                selectable: true
+            });
+            canvas.add(headerRect);
+            
+            // Add title text
+            const titleText = new fabric.Textbox('ADMISSION OPEN', {
+                left: canvas.width / 2,
+                top: 75,
+                fontSize: 60,
+                fontFamily: 'Roboto',
+                fill: '#ffffff',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(titleText);
+            
+            // Add Urdu title
+            const urduTitle = new fabric.Textbox('داخلہ جاری ہے', {
+                left: canvas.width / 2,
+                top: 200,
+                fontSize: 50,
+                fontFamily: 'Noto Nastaliq Urdu',
+                fill: '#006400',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600,
+                direction: 'rtl'
+            });
+            canvas.add(urduTitle);
+            
+            // Add madrasa name
+            const madrasaName = new fabric.Textbox('Al-Falah Islamic School & Madrasa', {
+                left: canvas.width / 2,
+                top: 280,
+                fontSize: 36,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(madrasaName);
+            
+            // Add courses text
+            const coursesText = new fabric.Textbox('Offering Courses In:', {
+                left: canvas.width / 2,
+                top: 350,
+                fontSize: 28,
+                fontFamily: 'Roboto',
+                fill: '#006400',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(coursesText);
+            
+            // Add course list
+            const coursesList = new fabric.Textbox('• Qur'an Recitation & Memorization\n• Arabic Language\n• Islamic Studies\n• Fiqh & Shari'ah\n• Hadith Studies', {
+                left: canvas.width / 2,
+                top: 450,
+                fontSize: 26,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(coursesList);
+            
+            // Add admission details
+            const admissionDetails = new fabric.Textbox('ADMISSION DETAILS', {
+                left: canvas.width / 2,
+                top: 600,
+                fontSize: 30,
+                fontFamily: 'Roboto',
+                fill: '#006400',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(admissionDetails);
+            
+            // Add starting date
+            const startDate = new fabric.Textbox('Starting Date: June 1, 2025', {
+                left: canvas.width / 2,
+                top: 650,
+                fontSize: 24,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(startDate);
+            
+            // Add age group
+            const ageGroup = new fabric.Textbox('Age: 5-16 years', {
+                left: canvas.width / 2,
+                top: 690,
+                fontSize: 24,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(ageGroup);
+            
+            // Add footer banner
+            const footerRect = new fabric.Rect({
+                left: 0,
+                top: canvas.height - 200,
+                width: canvas.width,
+                height: 200,
+                fill: '#006400',
+                selectable: true
+            });
+            canvas.add(footerRect);
+            
+            // Add contact text
+            const contactText = new fabric.Textbox('CONTACT US', {
+                left: canvas.width / 2,
+                top: canvas.height - 170,
+                fontSize: 28,
+                fontFamily: 'Roboto',
+                fill: '#ffffff',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(contactText);
+            
+            // Add address
+            const addressText = new fabric.Textbox('123 Islamic Street, City Name', {
+                left: canvas.width / 2,
+                top: canvas.height - 130,
+                fontSize: 22,
+                fontFamily: 'Roboto',
+                fill: '#ffffff',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(addressText);
+            
+            // Add phone
+            const phoneText = new fabric.Textbox('Phone: +1 234 567 8901', {
+                left: canvas.width / 2,
+                top: canvas.height - 100,
+                fontSize: 22,
+                fontFamily: 'Roboto',
+                fill: '#ffffff',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(phoneText);
+            
+            // Add mosque icon
+            addIcon('mosque', 700, 900, 80);
+            
+            canvas.renderAll();
+        }
+        
+        // Create Event Template
+        function createEventTemplate() {
+            // Set background color
+            canvas.setBackgroundColor('#e6f7ff', canvas.renderAll.bind(canvas));
+            
+            // Add header banner
+            const headerRect = new fabric.Rect({
+                left: 0,
+                top: 0,
+                width: canvas.width,
+                height: 180,
+                fill: '#1a5276',
+                selectable: true
+            });
+            canvas.add(headerRect);
+            
+            // Add event title
+            const titleText = new fabric.Textbox('SPECIAL ISLAMIC LECTURE', {
+                left: canvas.width / 2,
+                top: 90,
+                fontSize: 48,
+                fontFamily: 'Roboto',
+                fill: '#ffffff',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 700
+            });
+            canvas.add(titleText);
+            
+            // Add Arabic title
+            const arabicTitle = new fabric.Textbox('محاضرة إسلامية خاصة', {
+                left: canvas.width / 2,
+                top: 240,
+                fontSize: 42,
+                fontFamily: 'Amiri',
+                fill: '#1a5276',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600,
+                direction: 'rtl'
+            });
+            canvas.add(arabicTitle);
+            
+            // Add event subtitle
+            const subtitleText = new fabric.Textbox('Understanding the Seerah of Prophet Muhammad ﷺ', {
+                left: canvas.width / 2,
+                top: 320,
+                fontSize: 30,
+                fontFamily: 'Roboto',
+                fill: '#1a5276',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 700
+            });
+            canvas.add(subtitleText);
+            
+            // Add speaker info
+            const speakerTitle = new fabric.Textbox('GUEST SPEAKER', {
+                left: canvas.width / 2,
+                top: 400,
+                fontSize: 24,
+                fontFamily: 'Roboto',
+                fill: '#1a5276',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(speakerTitle);
+            
+            // Add speaker name
+            const speakerName = new fabric.Textbox('Mufti Abdullah Khan', {
+                left: canvas.width / 2,
+                top: 440,
+                fontSize: 36,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(speakerName);
+            
+            // Add date & time container
+            const dateTimeRect = new fabric.Rect({
+                left: canvas.width / 2 - 350,
+                top: 500,
+                width: 700,
+                height: 200,
+                fill: '#e8f8f5',
+                stroke: '#1a5276',
+                strokeWidth: 3,
+                rx: 10,
+                ry: 10,
+                originX: 'center',
+                originY: 'top',
+                selectable: true
+            });
+            canvas.add(dateTimeRect);
+            
+            // Add event date
+            const dateText = new fabric.Textbox('Date: Saturday, May 10, 2025', {
+                left: canvas.width / 2,
+                top: 540,
+                fontSize: 30,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(dateText);
+            
+            // Add event time
+            const timeText = new fabric.Textbox('Time: 5:00 PM - 7:30 PM', {
+                left: canvas.width / 2,
+                top: 590,
+                fontSize: 30,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(timeText);
+            
+            // Add venue text
+            const venueText = new fabric.Textbox('Venue: Al-Falah Islamic Center Main Hall', {
+                left: canvas.width / 2,
+                top: 640,
+                fontSize: 30,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(venueText);
+            
+            // Add note text
+            const noteText = new fabric.Textbox('* Free Entry * Separate Seating for Brothers & Sisters * Refreshments Available', {
+                left: canvas.width / 2,
+                top: 750,
+                fontSize: 22,
+                fontFamily: 'Roboto',
+                fill: '#1a5276',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 700
+            });
+            canvas.add(noteText);
+            
+            // Add contact info
+            const contactTitle = new fabric.Textbox('FOR MORE INFO CONTACT:', {
+                left: canvas.width / 2,
+                top: 820,
+                fontSize: 24,
+                fontFamily: 'Roboto',
+                fill: '#1a5276',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(contactTitle);
+            
+            // Add phone
+            const phoneText = new fabric.Textbox('Brother Ahmed: +1 234 567 8901 | Sister Aisha: +1 234 567 8902', {
+                left: canvas.width / 2,
+                top: 860,
+                fontSize: 22,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 700
+            });
+            canvas.add(phoneText);
+            
+            // Add footer logo
+            const footerText = new fabric.Textbox('Organized by: Al-Falah Islamic Center', {
+                left: canvas.width / 2,
+                top: canvas.height - 80,
+                fontSize: 24,
+                fontFamily: 'Roboto',
+                fill: '#1a5276',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(footerText);
+            
+            // Add crescent icon
+            addIcon('star', 650, 850, 60);
+            
+            canvas.renderAll();
+        }
+        
+        // Create Seminar Template
+        function createSeminarTemplate() {
+            // Set background color
+            canvas.setBackgroundColor('#f9ebea', canvas.renderAll.bind(canvas));
+            
+            // Add header banner
+            const headerRect = new fabric.Rect({
+                left: 0,
+                top: 0,
+                width: canvas.width,
+                height: 160,
+                fill: '#7b241c',
+                selectable: true
+            });
+            canvas.add(headerRect);
+            
+            // Add seminar title
+            const titleText = new fabric.Textbox('ISLAMIC WORKSHOP', {
+                left: canvas.width / 2,
+                top: 80,
+                fontSize: 50,
+                fontFamily: 'Roboto',
+                fill: '#ffffff',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 700
+            });
+            canvas.add(titleText);
+            
+            // Add Urdu title
+            const urduTitle = new fabric.Textbox('قرآن کی تفسیر اور فہم', {
+                left: canvas.width / 2,
+                top: 230,
+                fontSize: 40,
+                fontFamily: 'Noto Nastaliq Urdu',
+                fill: '#7b241c',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600,
+                direction: 'rtl'
+            });
+            canvas.add(urduTitle);
+            
+            // Add English subtitle
+            const englishSubtitle = new fabric.Textbox('Understanding Tafseer of the Quran', {
+                left: canvas.width / 2,
+                top: 300,
+                fontSize: 32,
+                fontFamily: 'Roboto',
+                fill: '#7b241c',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(englishSubtitle);
+            
+            // Add details container
+            const detailsRect = new fabric.Rect({
+                left: canvas.width / 2 - 350,
+                top: 360,
+                width: 700,
+                height: 300,
+                fill: '#fadbd8',
+                stroke: '#7b241c',
+                strokeWidth: 3,
+                rx: 10,
+                ry: 10,
+                originX: 'center',
+                originY: 'top',
+                selectable: true
+            });
+            canvas.add(detailsRect);
+            
+            // Add what you'll learn
+            const learnTitle = new fabric.Textbox('WHAT YOU\'LL LEARN:', {
+                left: canvas.width / 2,
+                top: 380,
+                fontSize: 26,
+                fontFamily: 'Roboto',
+                fill: '#7b241c',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(learnTitle);
+            
+            // Add learn points
+            const learnPoints = new fabric.Textbox('• Principles of Tafseer\n• Historical Context of Revelations\n• Understanding Asbab al-Nuzul (Reasons for Revelation)\n• Connecting Quranic Guidance to Modern Life\n• Practical Application of Quranic Teachings', {
+                left: canvas.width / 2,
+                top: 480,
+                fontSize: 22,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 650
+            });
+            canvas.add(learnPoints);
+            
+            // Add schedule title
+            const scheduleTitle = new fabric.Textbox('WORKSHOP SCHEDULE:', {
+                left: canvas.width / 2,
+                top: 680,
+                fontSize: 26,
+                fontFamily: 'Roboto',
+                fill: '#7b241c',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(scheduleTitle);
+            
+            // Add schedule details
+            const scheduleDetails = new fabric.Textbox('Dates: Every Saturday, June 5 - July 10, 2025\nTime: 10:00 AM - 12:30 PM\nVenue: Al-Falah Islamic Center, Classroom B', {
+                left: canvas.width / 2,
+                top: 750,
+                fontSize: 24,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 650
+            });
+            canvas.add(scheduleDetails);
+            
+            // Add instructor details
+            const instructorTitle = new fabric.Textbox('WORKSHOP INSTRUCTOR:', {
+                left: canvas.width / 2,
+                top: 850,
+                fontSize: 26,
+                fontFamily: 'Roboto',
+                fill: '#7b241c',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(instructorTitle);
+            
+            // Add instructor name
+            const instructorName = new fabric.Textbox('Shaykh Muhammad Ali', {
+                left: canvas.width / 2,
+                top: 890,
+                fontSize: 28,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(instructorName);
+            
+            // Add footer
+            const footerRect = new fabric.Rect({
+                left: 0,
+                top: canvas.height - 100,
+                width: canvas.width,
+                height: 100,
+                fill: '#7b241c',
+                selectable: true
+            });
+            canvas.add(footerRect);
+            
+            // Add registration info
+            const registrationInfo = new fabric.Textbox('Registration Fee: $50 | To Register: Call 123-456-7890 or visit www.alfalah.org/workshop', {
+                left: canvas.width / 2,
+                top: canvas.height - 50,
+                fontSize: 22,
+                fontFamily: 'Roboto',
+                fill: '#ffffff',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 700
+            });
+            canvas.add(registrationInfo);
+            
+            // Add book icon
+            addIcon('book', 700, 950, 60);
+            
+            canvas.renderAll();
+        }
+        
+        // Create Teachers Template
+        function createTeachersTemplate() {
+            // Set background color
+            canvas.setBackgroundColor('#f0f9e8', canvas.renderAll.bind(canvas));
+            
+            // Add header banner
+            const headerRect = new fabric.Rect({
+                left: 0,
+                top: 0,
+                width: canvas.width,
+                height: 140,
+                fill: '#1e8449',
+                selectable: true
+            });
+            canvas.add(headerRect);
+            
+            // Add title
+            const titleText = new fabric.Textbox('OUR RESPECTED TEACHERS', {
+                left: canvas.width / 2,
+                top: 70,
+                fontSize: 46,
+                fontFamily: 'Roboto',
+                fill: '#ffffff',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 700
+            });
+            canvas.add(titleText);
+            
+            // Add Urdu subtitle
+            const urduSubtitle = new fabric.Textbox('ہمارے محترم اساتذہ', {
+                left: canvas.width / 2,
+                top: 180,
+                fontSize: 36,
+                fontFamily: 'Noto Nastaliq Urdu',
+                fill: '#1e8449',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600,
+                direction: 'rtl'
+            });
+            canvas.add(urduSubtitle);
+            
+            // Add school name
+            const schoolName = new fabric.Textbox('Al-Falah Islamic School', {
+                left: canvas.width / 2,
+                top: 230,
+                fontSize: 32,
+                fontFamily: 'Roboto',
+                fill: '#1e8449',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 600
+            });
+            canvas.add(schoolName);
+            
+            // Create teacher boxes
+            // Teacher 1
+            createTeacherBox(200, 320, 'Maulana Abdul Qadeer', 'Principal & Quran Teacher', '• PhD in Islamic Studies\n• 20+ years teaching experience\n• Expert in Quranic Tafseer');
+            
+            // Teacher 2
+            createTeacherBox(600, 320, 'Hafiz Muhammad Ibrahim', 'Hifz & Tajweed Instructor', '• Hafiz-e-Quran\n• Certified Qari\n• Expert in Tajweed rules');
+            
+            // Teacher 3
+            createTeacherBox(200, 560, 'Maulana Yasir Ali', 'Arabic & Fiqh Teacher', '• Masters in Arabic Literature\n• Specialization in Hanafi Fiqh\n• Author of several books');
+            
+            // Teacher 4
+            createTeacherBox(600, 560, 'Ustadha Ayesha Fatima', 'Sisters\' Wing Instructor', '• Alimah course graduate\n• Expert in Women\'s Fiqh issues\n• Certified Counselor');
+            
+            // Add footer
+            const footerRect = new fabric.Rect({
+                left: 0,
+                top: canvas.height - 180,
+                width: canvas.width,
+                height: 180,
+                fill: '#1e8449',
+                selectable: true
+            });
+            canvas.add(footerRect);
+            
+            // Add description
+            const description = new fabric.Textbox('Our teachers are highly qualified with strong academic backgrounds and extensive teaching experience. They are committed to providing excellent Islamic education in a nurturing environment.', {
+                left: canvas.width / 2,
+                top: canvas.height - 140,
+                fontSize: 22,
+                fontFamily: 'Roboto',
+                fill: '#ffffff',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 700
+            });
+            canvas.add(description);
+            
+            // Add contact
+            const contactInfo = new fabric.Textbox('For enrollment or more information, contact: 123-456-7890 | info@alfalah.org', {
+                left: canvas.width / 2,
+                top: canvas.height - 70,
+                fontSize: 22,
+                fontFamily: 'Roboto',
+                fill: '#ffffff',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: 700
+            });
+            canvas.add(contactInfo);
+            
+            // Add graduation icon
+            addIcon('graduate', 700, 800, 60);
+            
+            canvas.renderAll();
+        }
+        
+        // Helper function to create teacher box
+        function createTeacherBox(x, y, name, title, qualifications) {
+            const boxWidth = 350;
+            const boxHeight = 200;
+            
+            // Create box
+            const box = new fabric.Rect({
+                left: x,
+                top: y,
+                width: boxWidth,
+                height: boxHeight,
+                fill: '#e8f5e9',
+                stroke: '#1e8449',
+                strokeWidth: 2,
+                rx: 10,
+                ry: 10,
+                originX: 'center',
+                originY: 'top',
+                selectable: true
+            });
+            canvas.add(box);
+            
+            // Add name
+            const nameText = new fabric.Textbox(name, {
+                left: x,
+                top: y + 20,
+                fontSize: 24,
+                fontFamily: 'Roboto',
+                fill: '#1e8449',
+                fontWeight: 'bold',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: boxWidth - 20
+            });
+            canvas.add(nameText);
+            
+            // Add title
+            const titleText = new fabric.Textbox(title, {
+                left: x,
+                top: y + 55,
+                fontSize: 18,
+                fontFamily: 'Roboto',
+                fill: '#1e8449',
+                fontStyle: 'italic',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: boxWidth - 20
+            });
+            canvas.add(titleText);
+            
+            // Add qualifications
+            const qualText = new fabric.Textbox(qualifications, {
+                left: x,
+                top: y + 120,
+                fontSize: 16,
+                fontFamily: 'Roboto',
+                fill: '#000000',
+                originX: 'center',
+                originY: 'center',
+                textAlign: 'center',
+                width: boxWidth - 30
+            });
+            canvas.add(qualText);
+        }
+        
+        // Add text box
+        function addTextBox(direction) {
+            const text = direction === 'rtl' 
+                ? 'اكتب النص هنا' 
+                : 'Type text here';
+            
+            const fontFamily = direction === 'rtl' 
+                ? 'Noto Nastaliq Urdu' 
+                : 'Roboto';
+            
+            const textbox = new fabric.Textbox(text, {
+                left: 100,
+                top: 100,
+                width: 300,
+                fontSize: 24,
+                fontFamily: fontFamily,
+                fill: '#000000',
+                direction: direction,
+                textAlign: direction === 'rtl' ? 'right' : 'left'
+            });
+            
+            canvas.add(textbox);
+            canvas.setActiveObject(textbox);
+            updateTextControls();
+            canvas.renderAll();
+            
+            showStatusMessage('Text box added');
+        }
+        
+        // Update text controls when text is selected
+        function updateTextControls() {
+            const activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type === 'textbox') {
+                document.getElementById('text-properties').style.display = 'block';
+                document.getElementById('text-content').value = activeObject.text;
+                document.getElementById('text-font-family').value = activeObject.fontFamily;
+                document.getElementById('text-font-size').value = activeObject.fontSize;
+                document.getElementById('text-color').value = activeObject.fill;
+                document.getElementById('text-bold').checked = activeObject.fontWeight === 'bold';
+                document.getElementById('text-italic').checked = activeObject.fontStyle === 'italic';
+                document.getElementById('text-underline').checked = activeObject.underline === true;
+            }
+        }
+        
+        // Hide text controls when nothing is selected
+        function hideTextControls() {
+            document.getElementById('text-properties').style.display = 'none';
+        }
+        
+        // Update selected text
+        function updateSelectedText() {
+            const activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type === 'textbox') {
+                activeObject.set('text', document.getElementById('text-content').value);
+                canvas.renderAll();
+            }
+        }
+        
+        // Update text style
+        function updateTextStyle() {
+            const activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type === 'textbox') {
+                activeObject.set({
+                    fontFamily: document.getElementById('text-font-family').value,
+                    fontSize: parseInt(document.getElementById('text-font-size').value),
+                    fill: document.getElementById('text-color').value,
+                    fontWeight: document.getElementById('text-bold').checked ? 'bold' : 'normal',
+                    fontStyle: document.getElementById('text-italic').checked ? 'italic' : 'normal',
+                    underline: document.getElementById('text-underline').checked
+                });
+                canvas.renderAll();
+            }
+        }
+        
+        // Add shape to canvas
+        function addShape(type) {
+            let shape;
+            
+            switch (type) {
+                case 'rect':
+                    shape = new fabric.Rect({
+                        left: 100,
+                        top: 100,
+                        width: 200,
+                        height: 100,
+                        fill: '#3498db',
+                        opacity: 0.7
+                    });
+                    break;
+                case 'circle':
+                    shape = new fabric.Circle({
+                        left: 100,
+                        top: 100,
+                        radius: 50,
+                        fill: '#e74c3c',
+                        opacity: 0.7
+                    });
+                    break;
+                case 'triangle':
+                    shape = new fabric.Triangle({
+                        left: 100,
+                        top: 100,
+                        width: 100,
+                        height: 100,
+                        fill: '#2ecc71',
+                        opacity: 0.7
+                    });
+                    break;
+            }
+            
+            canvas.add(shape);
+            canvas.setActiveObject(shape);
+            canvas.renderAll();
+            
+            showStatusMessage(`Added ${type} shape`);
+        }
+        
+        // Add icon to canvas
+        function addIcon(iconType, x = 100, y = 100, size = 100) {
+            let iconClass;
+            
+            switch (iconType) {
+                case 'mosque':
+                    iconClass = 'fa-mosque';
+                    break;
+                case 'book':
+                    iconClass = 'fa-book-quran';
+                    break;
+                case 'star':
+                    iconClass = 'fa-star-and-crescent';
+                    break;
+                case 'kaaba':
+                    iconClass = 'fa-kaaba';
+                    break;
+                case 'prayer':
+                    iconClass = 'fa-hands-praying';
+                    break;
+                case 'calendar':
+                    iconClass = 'fa-calendar-days';
+                    break;
+                case 'graduate':
+                    iconClass = 'fa-graduation-cap';
+                    break;
+                case 'phone':
+                    iconClass = 'fa-phone';
+                    break;
+                default:
+                    iconClass = 'fa-mosque';
+            }
+            
+            const iconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!-- Font Awesome icon SVG path for the specific icon --></svg>`;
+            
+            fabric.loadSVGFromString(iconSVG, function(objects, options) {
+                const icon = fabric.util.groupSVGElements(objects, options);
+                icon.set({
+                    left: x,
+                    top: y,
+                    scaleX: size / icon.width,
+                    scaleY: size / icon.height,
+                    fill: '#2a5d84'
+                });
+                
+                canvas.add(icon);
+                canvas.setActiveObject(icon);
+                canvas.renderAll();
+            });
+            
+            showStatusMessage(`Added ${iconType} icon`);
+        }
+        
+        // Add pattern
+        function addPattern(patternId) {
+            // In a real app, these would be actual pattern SVG paths
+            const patternSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!-- Islamic pattern SVG path --></svg>`;
+            
+            fabric.loadSVGFromString(patternSVG, function(objects, options) {
+                const pattern = fabric.util.groupSVGElements(objects, options);
+                pattern.set({
+                    left: 100,
+                    top: 100,
+                    scaleX: 200 / pattern.width,
+                    scaleY: 200 / pattern.height,
+                    fill: '#2a5d84',
+                    opacity: 0.5
+                });
+                
+                canvas.add(pattern);
+                canvas.setActiveObject(pattern);
+                canvas.renderAll();
+            });
+            
+            showStatusMessage('Added Islamic pattern');
+        }
+        
+        // Upload image
+        function uploadImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgURL = e.target.result;
+                fabric.Image.fromURL(imgURL, function(img) {
+                    // Scale down large images
+                    if (img.width > canvas.width / 2) {
+                        const scaleFactor = (canvas.width / 2) / img.width;
+                        img.scale(scaleFactor);
+                    }
+                    
+                    canvas.add(img);
+                    canvas.setActiveObject(img);
+                    canvas.renderAll();
+                    
+                    showStatusMessage('Image uploaded');
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Generate QR code
+        function generateQRCode() {
+            const qrData = document.getElementById('qr-data').value;
+            if (!qrData) return;
+            
+            const qrCodeContainer = document.getElementById('qrcode');
+            qrCodeContainer.innerHTML = '';
+            
+            // Create QR code
+            new QRCode(qrCodeContainer, {
+                text: qrData,
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            // Show modal
+            document.getElementById('qr-modal').style.display = 'block';
+        }
+        
+        // Add QR code to canvas
+        function addQRCodeToCanvas() {
+            const qrCodeImg = document.querySelector('#qrcode img');
+            if (!qrCodeImg) return;
+            
+            fabric.Image.fromURL(qrCodeImg.src, function(img) {
+                img.set({
+                    left: 100,
+                    top: 100,
+                    scaleX: 0.5,
+                    scaleY: 0.5
+                });
+                
+                canvas.add(img);
+                canvas.setActiveObject(img);
+                canvas.renderAll();
+                
+                // Close modal
+                closeModal('qr-modal');
+                
+                showStatusMessage('QR code added');
+            });
+        }
+        
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Export image
+        function exportImage() {
+            // Set canvas to be non-interactive during export
+            canvas.discardActiveObject();
+            canvas.renderAll();
+            
+            // Export as png
+            const dataURL = canvas.toDataURL({
+                format: 'png',
+                quality: 1
+            });
+            
+            // Create download link
+            const link = document.createElement('a');
+            link.download = 'islamic-poster.png';
+            link.href = dataURL;
+            link.click();
+            
+            showStatusMessage('Poster exported as image');
+        }
+        
+        // Save design
+        function saveDesign() {
+            const json = JSON.stringify(canvas.toJSON());
+            const blob = new Blob([json], {type: 'application/json'});
+            const link = document.createElement('a');
+            link.download = 'islamic-poster-design.json';
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            
+            showStatusMessage('Design saved');
+        }
+        
+        // Load design from file
+        function loadDesignFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const jsonData = JSON.parse(e.target.result);
+                    canvas.loadFromJSON(jsonData, function() {
+                        canvas.renderAll();
+                        showStatusMessage('Design loaded');
+                    });
+                } catch (error) {
+                    console.error('Error loading design:', error);
+                    showStatusMessage('Error loading design');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Change poster size
+        function changePosterSize() {
+            const sizeValue = document.getElementById('poster-size').value;
+            
+            if (sizeValue === 'custom') {
+                document.getElementById('custom-size').style.display = 'block';
+                return;
+            }
+            
+            let width, height;
+            
+            switch (sizeValue) {
+                case 'a4':
+                    width = 800; // ~8.27in at 96dpi
+                    height = 1100; // ~11.69in at 96dpi
+                    break;
+                case 'a4-landscape':
+                    width = 1100;
+                    height = 800;
+                    break;
+                case 'a3':
+                    width = 1100; // ~11.69in at 96dpi
+                    height = 1600; // ~16.53in at 96dpi
+                    break;
+                case 'a3-landscape':
+                    width = 1600;
+                    height = 1100;
+                    break;
+                case 'square':
+                    width = 1000;
+                    height = 1000;
+                    break;
+                default:
+                    width = 800;
+                    height = 1100;
+            }
+            
+            setCanvasSize(width, height);
+        }
+        
+        // Apply custom size
+        function applyCustomSize() {
+            const width = parseInt(document.getElementById('custom-width').value);
+            const height = parseInt(document.getElementById('custom-height').value);
+            
+            if (width < 100 || width > 3000 || height < 100 || height > 3000) {
+                showStatusMessage('Size must be between 100px and 3000px');
+                return;
+            }
+            
+            setCanvasSize(width, height);
+        }
+        
+        // Set canvas size
+        function setCanvasSize(width, height) {
+            canvas.setWidth(width);
+            canvas.setHeight(height);
+            canvas.renderAll();
+            
+            showStatusMessage(`Size changed to ${width}x${height}`);
+        }
+        
+        // Change background color
+        function changeBackgroundColor(color) {
+            canvas.setBackgroundColor(color, canvas.renderAll.bind(canvas));
+        }
+        
+        // Delete selected objects
+        function deleteSelected() {
+            const activeObject = canvas.getActiveObject();
+            if (!activeObject) return;
+            
+            if (activeObject.type === 'activeSelection') {
+                // Multiple objects selected
+                activeObject.forEachObject(function(object) {
+                    canvas.remove(object);
+                });
+            } else {
+                // Single object selected
+                canvas.remove(activeObject);
+            }
+            
+            canvas.discardActiveObject();
+            canvas.renderAll();
+            
+            showStatusMessage('Object(s) deleted');
+        }
+        
+        // Send object backward in layer stack
+        function sendBackward() {
+            const activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                canvas.sendBackwards(activeObject);
+                canvas.renderAll();
+            }
+        }
+        
+        // Bring object forward in layer stack
+        function bringForward() {
+            const activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                canvas.bringForward(activeObject);
+                canvas.renderAll();
+            }
+        }
+        
+        // Undo action
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                redoStack.push(JSON.stringify(canvas));
+                canvas.loadFromJSON(canvasHistory[historyIndex], canvas.renderAll.bind(canvas));
+                showStatusMessage('Undo');
+            }
+        }
+        
+        // Redo action
+        function redo() {
+            if (redoStack.length > 0) {
+                const redoState = redoStack.pop();
+                canvasHistory[++historyIndex] = redoState;
+                canvas.loadFromJSON(redoState, canvas.renderAll.bind(canvas));
+                showStatusMessage('Redo');
+            }
+        }
+        
+        // Save canvas state
+        function saveCanvasState() {
+            // Remove any redo states if we've gone back in history
+            redoStack = [];
+            
+            // Remove states ahead of the current one
+            if (historyIndex < canvasHistory.length - 1) {
+                canvasHistory = canvasHistory.slice(0, historyIndex + 1);
+            }
+            
+            // Save current state
+            canvasHistory.push(JSON.stringify(canvas));
+            historyIndex = canvasHistory.length - 1;
+        }
+        
+        // Share via WhatsApp
+        function shareWhatsApp() {
+            canvas.discardActiveObject();
+            canvas.renderAll();
+            
+            const dataURL = canvas.toDataURL({
+                format: 'png',
+                quality: 0.8
+            });
+            
+            // In a real app, this would upload the image to a server and get a shareable URL
+            alert("In a production app, this would share your poster via WhatsApp. For this demo, please export the image instead.");
+        }
+        
+        // Print poster
+        function printPoster() {
+            canvas.discardActiveObject();
+            canvas.renderAll();
+            
+            const dataURL = canvas.toDataURL();
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Print Islamic Poster</title>
+                    <style>
+                        body {
+                            margin: 0;
+                            padding: 0;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100vh;
+                        }
+                        img {
+                            max-width: 100%;
+                            max-height: 100vh;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <img src="${dataURL}" alt="Islamic Poster">
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                                window.close();
+                            }, 200);
+                        };
+                    </script>
+                </body>
+                </html>
+            `);
+        }
+        
+        // Show status message
+        function showStatusMessage(message) {
+            const statusElement = document.getElementById('status-message');
+            statusElement.textContent = message;
+            statusElement.style.display = 'block';
+            statusElement.style.opacity = '1';
+            
+            setTimeout(function() {
+                statusElement.style.opacity = '0';
+                setTimeout(function() {
+                    statusElement.style.display = 'none';
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
